@@ -1,12 +1,10 @@
 <!doctype html>
 
 <html>
-
-
 	<head>
 		<title>The Wall</title>
 		<meta charset="utf-8" />
-		
+
 		<!--Will get the position and send to update-wall.php -->
 		<script type="text/javascript" src="geolocation.js"></script>
 		
@@ -39,8 +37,6 @@
 			</div>
 
 		</div> 
-		
-
 	</body>
 
 </html>
