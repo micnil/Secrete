@@ -1,4 +1,24 @@
-<?php require(dirname(__FILE__) . '/templates/header.php'); ?>
+<!doctype html>
+
+<html>
+
+
+	<head>
+		<title>The Wall</title>
+		<meta charset="utf-8" />
+<!-- 		<link rel="stylesheet" type="text/css" href="/styles/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="/styles/simplegrid.css" />
+		<link rel="stylesheet" type="text/css" href="/styles/styles.css" /> -->
+		<script type="text/javascript" src="geolocation.js"></script>
+		
+	</head>
+
+	<body>
+		<div class="col-1-1 header">
+			<div class="content">
+				<h1>The Wall</h1>
+			</div>
+		</div>
 
 		<div class="grid grid-pad">
 			<div class="col-3-12 hide-on-mobile">
@@ -39,4 +59,6 @@
 			</div>
 		</div>
 
-<?php require(dirname(__FILE__) . '/templates/footer.php'); ?>
+	</body>
+
+</html>
