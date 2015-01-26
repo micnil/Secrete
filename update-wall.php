@@ -15,9 +15,9 @@
 		public $date = "";
 		public $position = "";
 
-		public function __construct($thePosition, $theDate, $theText ) {
+		public function __construct($thePosition, $theDateTime, $theText ) {
 			$this->position = $thePosition;
-			$this->date = $theDate;
+			$this->dateTime = $theDateTime;
 			$this->text = $theText;
 		}
 	}

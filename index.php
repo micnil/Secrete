@@ -19,13 +19,7 @@
 
 			<div id="wall">
 
-				<div class="post">
-					<p> here is a post </p>
-				</div>
 
-				<div class="post">
-					<p> here is another post </p>
-				</div>
 			</div>
 
 			<div class="edit-text">
