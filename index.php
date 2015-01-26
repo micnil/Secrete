@@ -1,5 +1,9 @@
 <!doctype html>
 
+<?php 
+include 'make_post.php';
+?>
+
 <html>
 	<head>
 		<title>The Wall</title>
@@ -29,11 +33,19 @@
 			</div>
 
 			<div class="edit-text">
-				<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform"></textarea>
-				<form action="" id="postform">
+				<form action="" id="postform" method="post">
+				<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform" name="post"></textarea>
 
-					<input type="submit" value="Post">
+					<input type="submit" value="Post" name="post_btn">
+					<input type="invisible" name="latitude" id="latitude">
+					<input type="invisible" name="longitude" id="longitude">
+
 				</form>
+				<?php
+				if($_POST['post_btn'] and $_SERVER['REQUEST_METHOD'] == "POST"){
+				    make_post($_POST['post'], $_POST['latitude'], $_POST['longitude']);
+				}
+				?>
 			</div>
 
 		</div> 

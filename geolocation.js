@@ -15,6 +15,9 @@ function success(pos) {
   var latitude = crd.latitude;
   var longitude = crd.longitude;
 
+  document.getElementById('latitude').value = latitude;
+  document.getElementById('longitude').value = longitude;
+
   //there is also position accuracy in meters
   //var accuracry = crd.accuracy;  
 

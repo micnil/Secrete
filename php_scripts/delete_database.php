@@ -29,7 +29,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error . "<br/>");
 } 
 
-// Create database
+// Delete database
 $sql = "DROP DATABASE thewall;";
 if ($conn->query($sql) === TRUE) {
     echo "Database deleted successfully" . "<br/>";

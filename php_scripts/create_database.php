@@ -56,7 +56,7 @@ $sql =
 if ($conn->query($sql) === TRUE) {
     echo "Created the table successfully" . "<br/>";
 } else {
-    echo "Error creating sable: " . $conn->error . "<br/>";
+    echo "Error creating table: " . $conn->error . "<br/>";
 }
 
 $conn->close();
