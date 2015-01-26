@@ -31,9 +31,10 @@ function success(pos) {
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
-          //console.log(return_data);
-
-          document.getElementById('wall').innerHTML += return_data;
+          console.log(return_data);
+          //var fixedResponse = response.responseText.replace(/\\'/g, "'");
+          var posts = JSON.parse(return_data);
+          //document.getElementById('wall').innerHTML += JSON.stringify(return_data, undefined, 2);
       }
   }
   xhr.send("latitude=" + latitude + "&longitude=" + longitude);
