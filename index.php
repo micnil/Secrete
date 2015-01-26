@@ -14,50 +14,33 @@
 	</head>
 
 	<body>
-		<div class="col-1-1 header">
-			<div class="content">
-				<h1>The Wall</h1>
-			</div>
+		<div class="header">
+			<h1>The Wall</h1>
 		</div>
 
-		<div class="grid grid-pad">
-			<div class="col-3-12 hide-on-mobile">
-				<div class="side-area">
+		<div class="content">
+
+			<div id="wall">
+
+				<div class="post">
+					<p> here is a post </p>
+				</div>
+
+				<div class="post">
+					<p> here is another post </p>
 				</div>
 			</div>
 
-			<div class="col-6-12">
+			<div class="edit-text">
+				<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform"></textarea>
+				<form action="" id="postform">
 
-	
- 				<div class="content">
+					<input type="submit" value="Post">
+				</form>
+			</div>
 
-					<div id="wall">
-
-						<div class="post">
-							<p> here is a post </p>
-						</div>
-
-						<div class="post">
-							<p> here is another post </p>
-						</div>
-					</div>
-
-					<div class="edit-text">
-						<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform"></textarea>
-						<form action="" id="postform">
+		</div> 
 		
-							<input type="submit" value="Post">
-						</form>
-					</div>
-
-				</div> 
-
-			</div>
-			<div class="col-3-12 hide-on-mobile">
-				<div class="side_area">
-				</div>
-			</div>
-		</div>
 
 	</body>
 
