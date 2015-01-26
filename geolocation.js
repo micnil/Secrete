@@ -1,4 +1,3 @@
-var latitude, longitude;
 
 var options = {
   enableHighAccuracy: true,
@@ -10,34 +9,32 @@ var options = {
 //More information about geolocation
 //https://developer.mozilla.org/en-US/docs/Web/API/Geolocation.getCurrentPosition
 function success(pos) {
+
   var crd = pos.coords;
 
-/* 
-  console.log('Your current position is:');
-  console.log('Latitude : ' + crd.latitude);
-  console.log('Longitude: ' + crd.longitude);
-  console.log('More or less ' + crd.accuracy + ' meters.');*/
-  latitude = crd.latitude;
-  longitude = crd.longitude;
-/*  document.getElementById("latitude").value =  latitude;
-  document.getElementById("longitude").value =  longitude;*/
-/*  document.getElementById("position-form").submit();*/
+  var latitude = crd.latitude;
+  var longitude = crd.longitude;
+
+  //there is also position accuracy in meters
+  //var accuracry = crd.accuracy;  
 
 
-//Send data to php using POST 
-var xhr = new XMLHttpRequest();
-var url = "update-wall.php";
-xhr.open("POST", url, true);
+  //Send data to php using POST 
+  //this could would look neater in jquery.
+  //Could also be done with a invisible form. Although that would 
+  //update the page when submit is pressed.
+  var xhr = new XMLHttpRequest();
+  var url = "update-wall.php";
+  xhr.open("POST", url, true);
 
-xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-xhr.onreadystatechange = function() {
-    if(xhr.readyState == 4 && xhr.status == 200) {
-        var return_data = xhr.responseText;
-        //console.log();
-    }
-}
-//var message = sprintf("latitude=%slongitude")
-xhr.send("latitude=" + latitude + "&longitude=" + longitude);
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          //console.log(return_data);
+      }
+  }
+  xhr.send("latitude=" + latitude + "&longitude=" + longitude);
 
 
 };
