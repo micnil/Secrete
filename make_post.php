@@ -13,7 +13,7 @@ only insert?
 
 function make_post($post_text, $latitude, $longitude)
 {
-   $servername = "127.0.0.1"; // localhost
+	$servername = "127.0.0.1"; // localhost
 	$username = "wall_poster";
 	$password = "v4l5g6s9";
 
@@ -31,15 +31,8 @@ function make_post($post_text, $latitude, $longitude)
 	    echo "Error using database: " . $conn->error . "<br/>";
 	}
 	// Insert post into table
-	$sql =
-		"INSERT INTO posts VALUE(
-		'" . $post_text . "',
-		" . $latitude . ",
-		" . $longitude . ",
-		NOW()
-		);";
-	$sql =
-		"INSERT INTO posts VALUE('" . $post_text . "', " . $latitude . ", " . $longitude . ", NOW());";
+	$sql = "INSERT INTO posts VALUE('" . $post_text . "', " . $latitude . ", " . $longitude . ", NOW());";
+	//$sql = "INSERT INTO posts VALUE( 'Hej',12,11, NOW());";
 	if ($conn->query($sql) === TRUE) {
 	    echo "Inserted post successfully" . "<br/>";
 	} else {
