@@ -1,3 +1,4 @@
+
 var Geolocation = {
   sendRequestFunction: null,
   options: {
@@ -18,3 +19,4 @@ var Geolocation = {
     navigator.geolocation.getCurrentPosition(Geolocation.success, Geolocation.error, Geolocation.options);
   },
 };
+
