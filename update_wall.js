@@ -47,12 +47,10 @@ function writePostsHTML(postsArray){
 			<div class='post'> \
 				<p class='post-text'> " + postsArray[i].text + "</p> \
 				<p class='post-footer-text'>" + postsArray[i].dateTime + "</p> \
+				" + comment_html_content + " \
 				<textarea rows='1' class='fill-width' placeholder='Leave a comment!' id='commentSection" + postsArray[i].id + "'></textarea> \
 				<input type='submit' value='post' name='post_btn' onclick='submitComment(" + postsArray[i].id + ")'> \
-			</div> \
-			<div>" +
-				comment_html_content +
-			"</div>";
+			</div>";
 		document.getElementById('wall').innerHTML += html_content;
 	}
 };

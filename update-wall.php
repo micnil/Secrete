@@ -82,7 +82,7 @@
 			$sql =
 				"SELECT comment_text, date, id FROM comments where
 				id = " . $row['id'] . " 
-				ORDER BY date DESC;";
+				ORDER BY date;";
 			$comments_response = $conn->query($sql);
 			if ($comments_response) {
 			    //echo "Fetched data successfully" . "<br/>";
