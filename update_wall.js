@@ -30,14 +30,49 @@ function updatePosts(){
 }
 
 function writePostsHTML(postsArray){
-	document.getElementById('wall').innerHTML = "";
-	for(var i in postsArray){
 
-		var html_content = "\
-			<div class='post'> \
-				<p class='post-text'> " + postsArray[i].text + "</p> \
-				<p class='post-footer-text'>" + postsArray[i].dateTime + "</p> \
-			</div>";
-		document.getElementById('wall').innerHTML += html_content;
-	}
+  var wallElement = document.getElementById('wall');
+
+  //removes everything from the wall
+  while (wallElement.firstChild) {
+    wallElement.removeChild(wallElement.firstChild);
+  }
+
+  for(var i in postsArray){  
+
+    var postDiv = document.createElement("div"); 
+    postDiv.className="post";
+
+    appendText(postDiv,postsArray[i].text)
+    appendDate(postDiv,postsArray[i].dateTime);
+
+    wallElement.appendChild(postDiv);
+  }
+
 };
+
+
+function appendText(element, text){
+
+  var p_text = document.createElement("p"); 
+  p_text.className="post-text";
+
+  var postContent = document.createTextNode(text); 
+
+  element.appendChild(p_text);
+  p_text.appendChild(postContent);
+
+};
+
+function appendDate(element, text){
+
+  var p_date = document.createElement("p"); 
+  p_date.className="post-date";
+
+  var postDate = document.createTextNode(text); 
+
+  element.appendChild(p_date);
+  p_date.appendChild(postDate);
+
+};
+
