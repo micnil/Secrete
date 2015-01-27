@@ -45,14 +45,29 @@ if ($conn->query($sql) === TRUE) {
     echo "Error using database: " . $conn->error . "<br/>";
 }
 
-// Create table
+// Create table for posts
 $sql =
 	"CREATE TABLE posts(
+    id MEDIUMINT NOT NULL AUTO_INCREMENT,
 	post VARCHAR(300) NOT NULL,
-	pos_longitude DOUBLE NOT NULL,
 	pos_latitude DOUBLE NOT NULL,
-	date DATETIME NOT NULL
+    pos_longitude DOUBLE NOT NULL,
+	date DATETIME NOT NULL,
+    PRIMARY KEY (id)
 	);";
+if ($conn->query($sql) === TRUE) {
+    echo "Created the table successfully" . "<br/>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br/>";
+}
+
+// Create table for comments
+$sql =
+    "CREATE TABLE comments(
+    comment_text VARCHAR(300) NOT NULL,
+    date DATETIME NOT NULL,
+    id MEDIUMINT NOT NULL
+    );";
 if ($conn->query($sql) === TRUE) {
     echo "Created the table successfully" . "<br/>";
 } else {

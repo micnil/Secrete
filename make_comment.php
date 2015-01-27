@@ -11,7 +11,7 @@ Maybe have another user that does the select later so that the post user can
 only insert?
 */
 
-function make_post($post_text, $latitude, $longitude)
+function make_comment($comment_text, $id)
 {
 	$servername = "127.0.0.1"; // localhost
 	$username = "wall_poster";
@@ -30,9 +30,8 @@ function make_post($post_text, $latitude, $longitude)
 	} else {
 	    echo "Error using database: " . $conn->error . "<br/>";
 	}
-	// Insert post into table
-	$sql = "INSERT INTO posts VALUE(0,'" . $post_text . "', " . $latitude . ", " . $longitude . ", NOW());";
-	//$sql = "INSERT INTO posts VALUE( 'Hej',12,11, NOW());";
+	// Insert comment into table
+	$sql = "INSERT INTO comments VALUE('" . $comment_text . "', NOW(), " . $id . ");";
 	if ($conn->query($sql) === TRUE) {
 	    echo "Inserted post successfully" . "<br/>";
 	} else {
@@ -40,9 +39,8 @@ function make_post($post_text, $latitude, $longitude)
 	}
 	$conn->close();
 }
-	// Get this via post from make_post.js
-	$lat = $_POST["latitude"];
-	$long = $_POST["longitude"];
-	$post_text = $_POST["post_text"];
-	make_post($post_text, $lat, $long);
+	// Get this via post from make_comment.js
+	$comment_text = $_POST["comment_text"];
+	$id = $_POST["id"];
+	make_comment($comment_text, $id);
 ?>
