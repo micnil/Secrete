@@ -43,7 +43,7 @@ function error(err) {
 };
 
 //Uses geolocation to get the position of the client. Success and error
-//are callback functions that will be called if the position can be retreived.
+//are callback functions that will be called whether the position can be retreived (or not).
 navigator.geolocation.getCurrentPosition(success, error, options);
 
 
