@@ -4,7 +4,6 @@
 * Deletes the posts visible on the Wall
 * and replaces it with the new posts
 */
-
 function updatePosts(){
   var xhr = new XMLHttpRequest();
   var url = "update-wall.php";
@@ -21,10 +20,12 @@ function updatePosts(){
   }
   Geolocation.updatePosition(sendRequest);
   function sendRequest(latitude,longitude) {
+  	var radius = document.getElementById('radius_slider').value;
   	console.log("latitude = " + latitude);
   	console.log("longitude = " + longitude);
+  	console.log("radius = " + radius);
 	if (latitude && longitude) {
-	  	xhr.send("latitude=" + latitude + "&longitude=" + longitude);
+	  	xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius);
 	}
   }
 }
@@ -39,13 +40,11 @@ function writePostsHTML(postsArray){
   }
 
   for(var i in postsArray){  
-
     var postDiv = document.createElement("div"); 
     postDiv.className="post";
-
-    appendText(postDiv,postsArray[i].text)
-    appendDate(postDiv,postsArray[i].dateTime);
-    appendCommentField(postDiv);
+    appendText(postDiv,postsArray[i].text, "post-text")
+    appendText(postDiv,postsArray[i].dateTime, "post-footer-text");
+    appendCommentField(postDiv, postsArray[i].comment_array, postsArray[i].id);
 
     wallElement.appendChild(postDiv);
   }
@@ -56,53 +55,46 @@ function writePostsHTML(postsArray){
   var allCommentTextfields = document.getElementsByClassName('comment-textfield');
 
   for(var i=0;i<allCommentTextfields.length;i++){
-    //allCommentTextfields.item(i).onkeyup = ifEnterThenComment;
     allCommentTextfields.item(i).onkeyup = function (event){
       if(event.keyCode==13){
-        event.target.value="";
-        //console.log(event.target);
-        //makeComment(event.target);
+        submitComment(event.target);
       }
     };
   }
 
-  
-
 };
 
 
-function appendText(element, text){
+function appendText(element, text, pClass){
 
   var p_text = document.createElement("p"); 
-  p_text.className="post-text";
+  p_text.className=pClass;
 
-  var postContent = document.createTextNode(text); 
+  var content = document.createTextNode(text); 
 
   element.appendChild(p_text);
-  p_text.appendChild(postContent);
+  p_text.appendChild(content);
 
 };
 
-function appendDate(element, text){
+function appendCommentField(element, comment_array, post_id){
 
-  var p_date = document.createElement("p"); 
-  p_date.className="post-date";
-
-  var postDate = document.createTextNode(text); 
-
-  p_date.appendChild(postDate);
-  element.appendChild(p_date);
-};
-
-function appendCommentField(element){
+  var commentSection = document.createElement("div");
+  commentSection.className = "comment-section";
 
   var commentTextField = document.createElement("textarea");
   //these attributes can maybe be specified in css instead.
   commentTextField.setAttribute("rows","1");
   commentTextField.setAttribute("placeholder","write a comment!");
+  commentTextField.setAttribute("comment_id",post_id);
   commentTextField.className = "comment-textfield";
 
-  element.appendChild(commentTextField);
+  for(var i in comment_array){
+    console.log()
+    appendText(commentSection,comment_array[i].text,"comment_text");
+    appendText(commentSection,comment_array[i].dateTime,"comment_footer_text");
+  }
+  commentSection.appendChild(commentTextField);
+  element.appendChild(commentSection);
 
 };
-
