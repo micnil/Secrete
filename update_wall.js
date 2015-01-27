@@ -45,9 +45,28 @@ function writePostsHTML(postsArray){
 
     appendText(postDiv,postsArray[i].text)
     appendDate(postDiv,postsArray[i].dateTime);
+    appendCommentField(postDiv);
 
     wallElement.appendChild(postDiv);
   }
+
+  //Goes through all commentTextfields and adds a onkeyup eventlistener
+  // that checks if the enter key was pressed. If it was, it calls the makeComment
+  // function and passes the commenttextfield element with it.
+  var allCommentTextfields = document.getElementsByClassName('comment-textfield');
+
+  for(var i=0;i<allCommentTextfields.length;i++){
+    //allCommentTextfields.item(i).onkeyup = ifEnterThenComment;
+    allCommentTextfields.item(i).onkeyup = function (event){
+      if(event.keyCode==13){
+        event.target.value="";
+        //console.log(event.target);
+        //makeComment(event.target);
+      }
+    };
+  }
+
+  
 
 };
 
@@ -71,8 +90,19 @@ function appendDate(element, text){
 
   var postDate = document.createTextNode(text); 
 
-  element.appendChild(p_date);
   p_date.appendChild(postDate);
+  element.appendChild(p_date);
+};
+
+function appendCommentField(element){
+
+  var commentTextField = document.createElement("textarea");
+  //these attributes can maybe be specified in css instead.
+  commentTextField.setAttribute("rows","1");
+  commentTextField.setAttribute("placeholder","write a comment!");
+  commentTextField.className = "comment-textfield";
+
+  element.appendChild(commentTextField);
 
 };
 
