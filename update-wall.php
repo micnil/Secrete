@@ -12,19 +12,19 @@
 
 	class Post{
 		public $text = "";
-		public $date = "";
+		public $dateTime = "";
 		public $position = "";
 
-		public function __construct($thePosition, $theDate, $theText ) {
+		public function __construct($thePosition, $theDateTime, $theText ) {
 			$this->position = $thePosition;
-			$this->date = $theDate;
+			$this->dateTime = $theDateTime;
 			$this->text = $theText;
 		}
 	}
 
-	$post1 = new Post("103 12",new DateTime(),"jag gillar äpplen ganska mycket");
-	$post2 = new Post("52 24",new DateTime(),"Snubben ovanför gillar äpplen faktiskt");
-	$post3 = new Post("89 31",new DateTime(),"vad är det här för ett spännande hemsida och koncept??");
+	$post1 = new Post("103 12","Idag","jag gillar äpplen ganska mycket");
+	$post2 = new Post("52 24","Imorgon","Snubben ovanför gillar äpplen faktiskt");
+	$post3 = new Post("89 31","Imorgon","vad är det här för ett spännande hemsida och koncept??");
 
  
 	$posts=[$post1,$post2,$post3];

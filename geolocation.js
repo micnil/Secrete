@@ -15,8 +15,8 @@ function success(pos) {
   var latitude = crd.latitude;
   var longitude = crd.longitude;
 
-  document.getElementById('latitude').value = latitude;
-  document.getElementById('longitude').value = longitude;
+  //document.getElementById('latitude').value = latitude;
+  //document.getElementById('longitude').value = longitude;
 
   //there is also position accuracy in meters
   //var accuracry = crd.accuracy;  
@@ -34,19 +34,40 @@ function success(pos) {
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
-          console.log(return_data);
-          //var fixedResponse = response.responseText.replace(/\\'/g, "'");
+          //console.log(return_data);
           var posts = JSON.parse(return_data);
-          //document.getElementById('wall').innerHTML += JSON.stringify(return_data, undefined, 2);
+          updatePostsOnWall(posts);
       }
   }
   xhr.send("latitude=" + latitude + "&longitude=" + longitude);
-
-
 };
 
 function error(err) {
   console.warn('ERROR(' + err.code + '): ' + err.message);
 };
 
+//Uses geolocation to get the position of the client. Success and error
+//are callback functions that will be called if the position can be retreived.
 navigator.geolocation.getCurrentPosition(success, error, options);
+
+
+/**
+* Deletes the posts visible on the Wall
+* and replaces it with the new posts
+*/
+function updatePostsOnWall(postsArray){
+
+	document.getElementById('wall').innerHTML = "";
+
+	for(var i in postsArray){
+
+		var html_content = "\
+			<div class='post'> \
+				<p class='post-text'> " + postsArray[i].text + "</p> \
+				<p class='post-footer-text'>" + postsArray[i].dateTime.date + "</p> \
+			</div>";
+		document.getElementById('wall').innerHTML += html_content;
+	}
+
+};
+

@@ -1,9 +1,5 @@
 <!doctype html>
 
-<?php 
-include 'make_post.php';
-?>
-
 <html>
 	<head>
 		<title>The Wall</title>
@@ -11,6 +7,7 @@ include 'make_post.php';
 
 		<!--Will get the position and send to update-wall.php -->
 		<script type="text/javascript" src="geolocation.js"></script>
+		<script type="text/javascript" src="make_post.js"></script>
 		
 	</head>
 
@@ -23,29 +20,12 @@ include 'make_post.php';
 
 			<div id="wall">
 
-				<div class="post">
-					<p> here is a post </p>
-				</div>
 
-				<div class="post">
-					<p> here is another post </p>
-				</div>
 			</div>
 
 			<div class="edit-text">
-				<form action="" id="postform" method="post">
-				<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform" name="post"></textarea>
-
-					<input type="submit" value="Post" name="post_btn">
-					<input type="invisible" name="latitude" id="latitude">
-					<input type="invisible" name="longitude" id="longitude">
-
-				</form>
-				<?php
-				if($_POST['post_btn'] and $_SERVER['REQUEST_METHOD'] == "POST"){
-				    make_post($_POST['post'], $_POST['latitude'], $_POST['longitude']);
-				}
-				?>
+				<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform" name="post" id="post_text"></textarea>
+				<input type="submit" value="post" name="post_btn" onclick="submitPost()">
 			</div>
 
 		</div> 

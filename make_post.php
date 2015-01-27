@@ -11,13 +11,11 @@ Maybe have another user that does the select later so that the post user can
 only insert?
 */
 
-function make_post($post, $latitude, $longitude)
+function make_post($post_text, $latitude, $longitude)
 {
    $servername = "127.0.0.1"; // localhost
 	$username = "wall_poster";
 	$password = "v4l5g6s9";
-
-	//$post = $_POST['post'];
 
 	// Create connection
 	$conn = new mysqli($servername, $username, $password);
@@ -25,7 +23,6 @@ function make_post($post, $latitude, $longitude)
 	if ($conn->connect_error) {
 	    die("Connection failed: " . $conn->connect_error . "<br/>");
 	} 
-
 	// Use the database
 	$sql = "USE thewall;";
 	if ($conn->query($sql) === TRUE) {
@@ -33,15 +30,16 @@ function make_post($post, $latitude, $longitude)
 	} else {
 	    echo "Error using database: " . $conn->error . "<br/>";
 	}
-
-	// Create table
+	// Insert post into table
 	$sql =
 		"INSERT INTO posts VALUE(
-		'" . $post . "',
+		'" . $post_text . "',
 		" . $latitude . ",
 		" . $longitude . ",
 		NOW()
 		);";
+	$sql =
+		"INSERT INTO posts VALUE('" . $post_text . "', " . $latitude . ", " . $longitude . ", NOW());";
 	if ($conn->query($sql) === TRUE) {
 	    echo "Inserted post successfully" . "<br/>";
 	} else {
@@ -49,4 +47,9 @@ function make_post($post, $latitude, $longitude)
 	}
 	$conn->close();
 }
+	// Get this via post from make_post.js
+	$lat = $_POST["latitude"];
+	$long = $_POST["longitude"];
+	$post_text = $_POST["post_text"];
+	make_post($post_text, $lat, $long);
 ?>
