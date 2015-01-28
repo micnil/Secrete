@@ -60,16 +60,12 @@
 	} else {
 	    //echo "Error using database: " . $conn->error . "<br/>";
 	}
-	// This should be done only for the close ones later
-	// x = r * cos(lat) * sin(long)
-	// y = r * sin(lat)
-	// z = r * cos(lat) * cos(long)
-
+    
+    // This is some ugly shit. Better to save the x,y,z coordinates in the DB and compare those instead.
 	$sql =
 		"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
-		pow(6378137,2) * (pow(cos(pos_latitude) * sin(pos_longitude) - cos(" . $this_latitude . ") * sin(" . $this_longitude . "),2) + 
-		pow(sin(pos_latitude) - sin(" . $this_latitude . "),2) + 
-		pow(cos(pos_latitude) * cos(pos_longitude) - cos(" . $this_latitude . ") * cos(" . $this_longitude . "),2)) < pow(" . $radius . ",2)
+		sqrt(pow(sqrt(pow(6378137*cos(" . $this_latitude . "*3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin(" . $this_latitude . "*3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos(" . $this_latitude . "*3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*(" . $this_longitude . "-pos_longitude),2))
+		< " . $radius . "
 		ORDER BY date DESC;";
 	$response = $conn->query($sql);
 	if ($response) {
