@@ -5,6 +5,7 @@
 		<title>The Wall</title>
 		<meta charset="utf-8" />
 
+		<link rel="stylesheet" type="text/css" href="styles/styles.css">
 		<!--Will get the position and send to update-wall.php -->
 		<script type="text/javascript" src="geolocation.js"></script>
 		<script type="text/javascript" src="make_post.js"></script>
