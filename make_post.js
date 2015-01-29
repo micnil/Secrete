@@ -40,7 +40,7 @@ function submitComment(comment_textfield)
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
           //console.log(return_data);
-          updatePosts();
+          //updatePosts();
           comment_textfield.value = "";
       }
   }

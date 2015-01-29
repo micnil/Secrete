@@ -22,7 +22,7 @@
 
 		<div class="content">
 			<div class="edit-text">
-				<input type="range" min="0" max="10000" value="5000" id="radius_slider" onchange="updatePosts()"/>
+				<input type="range" min="0" max="10000" value="5000" id="radius_slider" onchange="updateOldPosts()"/>
 				<textarea rows="4" class="fill-width" placeholder="write your post here!" form="postform" name="post" id="post_text"></textarea>
 				<input type="submit" value="post" name="post_btn" onclick="submitPost()">
 			</div>
