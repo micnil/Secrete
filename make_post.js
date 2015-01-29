@@ -10,7 +10,12 @@ function submitPost()
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
           //console.log(return_data);
-          updatePosts();
+          var post_list=document.getElementsByClassName("post");
+          if(post_list.item(0)){
+            updateNewPosts(post_list.item(0).getAttribute("post-id"));
+          }else{
+            updateOldPosts();
+          }
           document.getElementById('post_text').value = "";
       }
   }
@@ -34,7 +39,7 @@ function submitComment(comment_textfield)
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
-          console.log(return_data);
+          //console.log(return_data);
           updatePosts();
           comment_textfield.value = "";
       }

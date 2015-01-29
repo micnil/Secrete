@@ -7,13 +7,15 @@
 
 		<link rel="stylesheet" type="text/css" href="styles/styles.css">
 		<!--Will get the position and send to update-wall.php -->
+		<script type="text/javascript" src="eventHandler.js"></script>
 		<script type="text/javascript" src="geolocation.js"></script>
 		<script type="text/javascript" src="make_post.js"></script>
 		<script type="text/javascript" src="update_wall.js"></script>
 		
 	</head>
 
-	<body onload="updatePosts()">
+	<body onload="updateOldPosts()">
+
 		<div class="header">
 			<h1>The Wall</h1>
 		</div>

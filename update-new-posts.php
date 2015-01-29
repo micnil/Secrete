@@ -42,7 +42,7 @@
 	$this_latitude = $_POST["latitude"];
 	$this_longitude = $_POST["longitude"];
 	$radius = $_POST["radius"];
-	$bottom_post_id = $_POST["bottom_post_id"];
+	$top_post_id = $_POST["top_post_id"];
 
 	$servername = "127.0.0.1"; // localhost
 	$username = "wall_poster";
@@ -65,25 +65,14 @@
 	// x = r * cos(lat) * sin(long)
 	// y = r * sin(lat)
 	// z = r * cos(lat) * cos(long)
-	if($bottom_post_id!=0){
-		//echo "bottom_post_id is " . $bottom_post_id;
-		$sql =
-			"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
-			pow(6378137,2) * (pow(cos(pos_latitude) * sin(pos_longitude) - cos(" . $this_latitude . ") * sin(" . $this_longitude . "),2) + 
-			pow(sin(pos_latitude) - sin(" . $this_latitude . "),2) + 
-			pow(cos(pos_latitude) * cos(pos_longitude) - cos(" . $this_latitude . ") * cos(" . $this_longitude . "),2)) < pow(" . $radius . ",2)
-			AND id < " . $bottom_post_id . "
-			ORDER BY date DESC LIMIT 5;";
-	}else{
-		//echo "bottom_post_id is null";
-		$sql =
-			"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
-			pow(6378137,2) * (pow(cos(pos_latitude) * sin(pos_longitude) - cos(" . $this_latitude . ") * sin(" . $this_longitude . "),2) + 
-			pow(sin(pos_latitude) - sin(" . $this_latitude . "),2) + 
-			pow(cos(pos_latitude) * cos(pos_longitude) - cos(" . $this_latitude . ") * cos(" . $this_longitude . "),2)) < pow(" . $radius . ",2)
-			ORDER BY date DESC LIMIT 5;";
-
-	}
+	$sql =
+		"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
+		pow(6378137,2) * (pow(cos(pos_latitude) * sin(pos_longitude) - cos(" . $this_latitude . ") * sin(" . $this_longitude . "),2) + 
+		pow(sin(pos_latitude) - sin(" . $this_latitude . "),2) + 
+		pow(cos(pos_latitude) * cos(pos_longitude) - cos(" . $this_latitude . ") * cos(" . $this_longitude . "),2)) < pow(" . $radius . ",2)
+		AND id > " . $top_post_id . "
+		ORDER BY date DESC;";
+	
 	$response = $conn->query($sql);
 	if ($response) {
 	    //echo "Fetched data successfully" . "<br/>";

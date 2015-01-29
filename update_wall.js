@@ -1,10 +1,7 @@
 
-
-/**
-* Deletes the posts visible on the Wall
-* and replaces it with the new posts
-*/
-function updatePosts(){
+function updateOldPosts(bottomPostID){
+  bottomPostID = bottomPostID===undefined ? 0 : bottomPostID;
+  console.log(bottomPostID); 
   var xhr = new XMLHttpRequest();
   var url = "update-wall.php";
   xhr.open("POST", url, true);
@@ -15,56 +12,86 @@ function updatePosts(){
           var return_data = xhr.responseText;
           //console.log(return_data);
           var posts = JSON.parse(return_data);
-          writePostsHTML(posts);
+          writeOldPostsHTML(posts);
       }
   }
   Geolocation.updatePosition(sendRequest);
   function sendRequest(latitude,longitude) {
   	var radius = document.getElementById('radius_slider').value;
-  	console.log("latitude = " + latitude);
+/*  	console.log("latitude = " + latitude);
   	console.log("longitude = " + longitude);
-  	console.log("radius = " + radius);
-	if (latitude && longitude) {
-	  	xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius);
-	}
+  	console.log("radius = " + radius);*/
+  	if (latitude && longitude) {
+  	  	xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&bottom_post_id=" + bottomPostID);
+  	}
   }
 }
 
-function writePostsHTML(postsArray){
+function updateNewPosts(topPostID){
+  topPostID = topPostID===undefined ? 0 : topPostID; 
+  var xhr = new XMLHttpRequest();
+  var url = "update-new-posts.php";
+  xhr.open("POST", url, true);
+
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          //console.log(return_data);
+          var posts = JSON.parse(return_data);
+          writeNewPostsHTML(posts);
+      }
+  }
+  Geolocation.updatePosition(sendRequest);
+  function sendRequest(latitude,longitude) {
+    var radius = document.getElementById('radius_slider').value;
+/*    console.log("latitude = " + latitude);
+    console.log("longitude = " + longitude);
+    console.log("radius = " + radius);*/
+    if (latitude && longitude) {
+        xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&top_post_id=" + topPostID);
+    }
+  }
+}
+
+function writeOldPostsHTML(postsArray){
 
   var wallElement = document.getElementById('wall');
 
-  //removes everything from the wall
-  while (wallElement.firstChild) {
-    wallElement.removeChild(wallElement.firstChild);
-  }
-
   for(var i in postsArray){  
+
     var postDiv = document.createElement("div"); 
-    postDiv.className="post";
-    appendText(postDiv,postsArray[i].text, "post-text")
-    appendText(postDiv,postsArray[i].dateTime, "post-footer-text");
-    appendCommentField(postDiv, postsArray[i].comment_array, postsArray[i].id);
-
+    createPost(postDiv,postsArray[i]);
     wallElement.appendChild(postDiv);
-  }
-
-  //Goes through all commentTextfields and adds a onkeyup eventlistener
-  // that checks if the enter key was pressed. If it was, it calls the makeComment
-  // function and passes the commenttextfield element with it.
-  var allCommentTextfields = document.getElementsByClassName('comment-textfield');
-
-  for(var i=0;i<allCommentTextfields.length;i++){
-    allCommentTextfields.item(i).onkeyup = function (event){
-      if(event.keyCode==13){
-        submitComment(event.target);
-      }
-    };
   }
 
 };
 
+function writeNewPostsHTML(postsArray){
 
+  var wallElement = document.getElementById('wall');
+  var topPost = document.getElementsByClassName("post")[0];
+  
+  for(var i in postsArray){  
+    var postDiv = document.createElement("div"); 
+    createPost(postDiv,postsArray[i]);
+    wallElement.insertBefore(postDiv, topPost);
+  }
+
+};
+
+function createPost(postDiv,postJson){
+    
+    postDiv.className="post";
+    postDiv.setAttribute("post-id",postJson.id);
+    appendText(postDiv,postJson.text, "post-text");
+    appendText(postDiv,postJson.dateTime, "post-footer-text");
+    appendCommentField(postDiv, postJson.comment_array, postJson.id);
+};
+
+/** Appends a <p> tag wth 'text' content to the 'element'
+*   of your choice
+*/
 function appendText(element, text, pClass){
 
   var p_text = document.createElement("p"); 
@@ -88,6 +115,9 @@ function appendCommentField(element, comment_array, post_id){
   commentTextField.setAttribute("placeholder","write a comment!");
   commentTextField.setAttribute("comment_id",post_id);
   commentTextField.className = "comment-textfield";
+  commentTextField.onkeydown = 
+    commentTextField.onkeyup = 
+    EventHandler.commentKeyEvent;
 
   for(var i in comment_array){
     console.log()
