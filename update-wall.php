@@ -66,7 +66,7 @@
 		"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
 		sqrt(pow(sqrt(pow(6378137*cos(" . $this_latitude . "*3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin(" . $this_latitude . "*3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos(" . $this_latitude . "*3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*(" . $this_longitude . "-pos_longitude),2))
 		< " . $radius . "
-		ORDER BY date DESC;";
+		ORDER BY id DESC;";
 	$response = $conn->query($sql);
 	if ($response) {
 	    //echo "Fetched data successfully" . "<br/>";

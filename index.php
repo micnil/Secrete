@@ -10,7 +10,6 @@
 		<script type="text/javascript" src="geolocation.js"></script>
 		<script type="text/javascript" src="make_post.js"></script>
 		<script type="text/javascript" src="update_wall.js"></script>
-		
 	</head>
 
 	<body onload="updatePosts()">
