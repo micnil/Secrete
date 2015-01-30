@@ -4,10 +4,10 @@
 * When return_data is received, it calls writeOldPostsHTML 
 */
 function updateOldPosts(bottomPostID){
-  bottomPostID = bottomPostID===undefined ? 0 : bottomPostID;
-  console.log(bottomPostID); 
+  bottomPostID = bottomPostID===undefined ? 100000000000000000000 : bottomPostID;
+  //console.log(bottomPostID); 
   var xhr = new XMLHttpRequest();
-  var url = "update-wall.php";
+  var url = "request_handler.php";
   xhr.open("POST", url, true);
 
   xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -24,7 +24,7 @@ function updateOldPosts(bottomPostID){
   	var radius = document.getElementById('radius_slider').value;
 
   	if (latitude && longitude) {
-  	  	xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&bottom_post_id=" + bottomPostID);
+  	  	xhr.send("function=getPostsData" + "&latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&post_id=" + bottomPostID + "&numberOfPosts=" + 5 + "&old_or_new=old");
   	}
   }
 }
@@ -37,7 +37,7 @@ function updateOldPosts(bottomPostID){
 function updateNewPosts(topPostID){
   topPostID = topPostID===undefined ? 0 : topPostID; 
   var xhr = new XMLHttpRequest();
-  var url = "update-new-posts.php";
+  var url = "request_handler.php";
   xhr.open("POST", url, true);
 
   xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -54,9 +54,38 @@ function updateNewPosts(topPostID){
     var radius = document.getElementById('radius_slider').value;
 
     if (latitude && longitude) {
-        xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&top_post_id=" + topPostID);
+        xhr.send("function=getPostsData" + "&latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&post_id=" + topPostID + "&numberOfPosts=" + 5 + "&old_or_new=new");
     }
   }
+}
+
+/** 
+* Sends a request for all comments belonging to the postElement specified.
+* When return_data is received, it calls functionToWrite 
+*/
+function updateCommentSection(postElement){
+  var postID = postElement.parentNode.getAttribute("post-id");
+  console.log("postID = " + postID);
+  if (postID===undefined)
+    return;
+
+  var xhr = new XMLHttpRequest();
+  var url = "request_handler.php";
+  xhr.open("POST", url, true);
+
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          //console.log(return_data);
+          var comments = JSON.parse(return_data);
+          reWriteCommentsHTML(comments, postElement);
+      }
+  }
+  //Geolocation.updatePosition(sendRequest);
+  //function sendRequest(latitude,longitude) {
+    //var radius = document.getElementById('radius_slider').value;  
+  xhr.send("function=getCommentData" + "&post_id=" + postID);
 }
 
 /** 
@@ -91,6 +120,14 @@ function writeNewPostsHTML(postsArray){
     wallElement.insertBefore(postDiv, topPost);
   }
 
+};
+
+/** 
+* Clears comment section and rewrites all comment for a certain post.
+*/
+function reWriteCommentsHTML(commentArray, postElement){
+  postElement.innerHTML = '';
+  appendCommentField(postElement, commentArray, postElement.parentNode.getAttribute("post-id"));
 };
 
 /** 

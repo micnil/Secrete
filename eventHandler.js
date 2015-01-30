@@ -21,11 +21,13 @@ var EventHandler = {
 	commentKeyEvent: function (e){
 		e = e || event; // to deal with IE
     	EventHandler.key_map[e.keyCode] = e.type == 'keydown';
-
+    	console.log("Keycode : " + e.keyCode);
 		if(EventHandler.key_map[16] && EventHandler.key_map[13]){ // SHIFT + ENTER
 			//do nothing, just regular enter
 		}else if(EventHandler.key_map[13]){ // ENTER
-			submitComment(event.target);
+			submitComment(e.target);
+			console.log("HEJ HÄR ÄR TEXT");
+			updateCommentSection(e.target.parentNode);
 		}
     },
 
