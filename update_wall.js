@@ -1,12 +1,13 @@
-
-
-/**
-* Deletes the posts visible on the Wall
-* and replaces it with the new posts
+/** 
+* Sends a request for new posts with a post-id smaller than 'bottomPostID', and 
+* radius smaller than specified.
+* When return_data is received, it calls writeOldPostsHTML 
 */
-function updatePosts(){
+function updateOldPosts(bottomPostID){
+  bottomPostID = bottomPostID===undefined ? 100000000000000000000 : bottomPostID;
+  //console.log(bottomPostID); 
   var xhr = new XMLHttpRequest();
-  var url = "update-wall.php";
+  var url = "request_handler.php";
   xhr.open("POST", url, true);
 
   xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -15,55 +16,180 @@ function updatePosts(){
           var return_data = xhr.responseText;
           //console.log(return_data);
           var posts = JSON.parse(return_data);
-          writePostsHTML(posts);
+          writeOldPostsHTML(posts);
       }
   }
   Geolocation.updatePosition(sendRequest);
   function sendRequest(latitude,longitude) {
   	var radius = document.getElementById('radius_slider').value;
-  	console.log("latitude = " + latitude);
-  	console.log("longitude = " + longitude);
-  	console.log("radius = " + radius);
-	if (latitude && longitude) {
-	  	xhr.send("latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius);
-	}
+
+  	if (latitude && longitude) {
+  	  	xhr.send("function=getPostsData" + "&latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&post_id=" + bottomPostID + "&numberOfPosts=" + 5 + "&old_or_new=old");
+  	}
   }
 }
 
-function writePostsHTML(postsArray){
+/** 
+* Sends a request for new posts with a post-id larger than 'topPostID', and 
+* radius smaller than specified.
+* When return_data is received, it calls writeNewPostsHTML 
+*/
+function updateNewPosts(topPostID){
+  topPostID = topPostID===undefined ? 0 : topPostID; 
+  var xhr = new XMLHttpRequest();
+  var url = "request_handler.php";
+  xhr.open("POST", url, true);
+
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          //console.log(return_data);
+          var posts = JSON.parse(return_data);
+          writeNewPostsHTML(posts);
+      }
+  }
+  Geolocation.updatePosition(sendRequest);
+  function sendRequest(latitude,longitude) {
+    var radius = document.getElementById('radius_slider').value;
+
+    if (latitude && longitude) {
+        xhr.send("function=getPostsData" + "&latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&post_id=" + topPostID + "&numberOfPosts=" + 5 + "&old_or_new=new");
+    }
+  }
+}
+
+/** 
+* Sends a request for all comments belonging to the postElement specified.
+* When return_data is received, it calls functionToWrite 
+*/
+function updateCommentSection(postElement){
+  var postID = postElement.parentNode.parentNode.getAttribute("post-id");
+  console.log("postID = " + postID);
+  if (postID===undefined)
+    return;
+
+  var xhr = new XMLHttpRequest();
+  var url = "request_handler.php";
+  xhr.open("POST", url, true);
+
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          //console.log(return_data);
+          var comments = JSON.parse(return_data);
+          reWriteCommentsHTML(comments, postElement);
+      }
+  }
+  //Geolocation.updatePosition(sendRequest);
+  //function sendRequest(latitude,longitude) {
+    //var radius = document.getElementById('radius_slider').value;  
+  xhr.send("function=getCommentData" + "&post_id=" + postID);
+}
+
+/** 
+* Creates posts and appends them to the bottom
+* of the wall 
+*/
+function writeOldPostsHTML(postsArray){
 
   var wallElement = document.getElementById('wall');
 
-  //removes everything from the wall
-  while (wallElement.firstChild) {
-    wallElement.removeChild(wallElement.firstChild);
-  }
-
   for(var i in postsArray){  
-    var postDiv = document.createElement("div"); 
-    postDiv.className="post";
-    appendText(postDiv,postsArray[i].text, "post-text")
-    appendText(postDiv,postsArray[i].dateTime, "post-footer-text");
-    appendCommentField(postDiv, postsArray[i].comment_array, postsArray[i].id);
 
+    var postDiv = document.createElement("div"); 
+    createPost(postDiv,postsArray[i]);
     wallElement.appendChild(postDiv);
   }
 
-  //Goes through all commentTextfields and adds a onkeyup eventlistener
-  // that checks if the enter key was pressed. If it was, it calls the makeComment
-  // function and passes the commenttextfield element with it.
-  var allCommentTextfields = document.getElementsByClassName('comment-textfield');
+};
 
-  for(var i=0;i<allCommentTextfields.length;i++){
-    allCommentTextfields.item(i).onkeyup = function (event){
-      if(event.keyCode==13){
-        submitComment(event.target);
-      }
-    };
+/** 
+* Creates posts and inserts them above the first post
+* of the wall 
+*/
+function writeNewPostsHTML(postsArray){
+
+  var wallElement = document.getElementById('wall');
+  var topPost = document.getElementsByClassName("post")[0];
+  
+  for(var i in postsArray){  
+    var postDiv = document.createElement("div"); 
+    createPost(postDiv,postsArray[i]);
+    wallElement.insertBefore(postDiv, topPost);
   }
 };
 
+/** 
+* Clears comment section and rewrites all comment for a certain post.
+*/
 
+/*
+  The structure of the wall:
+
+  <div Post>
+    
+    <div Post content>
+      Text
+      Date
+    </div>
+
+    <div Comment section>
+      <div Comment section text>
+        <div Comment>
+          Text
+          Date
+        </div>
+        .
+        .
+        .
+        <div Comment>
+          Text
+          Date
+        </div>
+      </div>
+      <div Comment section input>
+        input field here
+      </div>
+    </div>
+
+  </div>
+*/
+
+/*
+* element whould be comment section text div.
+*/
+function reWriteCommentsHTML(commentArray, element){
+  element.innerHTML = '';
+  appendCommentText(element, commentArray);
+};
+
+/** 
+* takes a post div and post content (json) as input,
+* and creates the post 
+*/
+function createPost(postDiv,postJson){
+    postDiv.innerHTML = '';
+    postDiv.className="post";
+    postDiv.setAttribute("post-id",postJson.id);
+    var postContentDiv = document.createElement("div"); 
+      appendText(postContentDiv,postJson.text, "post-text");
+      appendText(postContentDiv,postJson.dateTime, "post-footer-text");
+    postDiv.appendChild(postContentDiv);
+    var commentSectionDiv = document.createElement("div");
+      var commentTextSectionDiv = document.createElement("div");
+        appendCommentText(commentTextSectionDiv, postJson.comment_array);
+      commentSectionDiv.appendChild(commentTextSectionDiv);
+      createCommentInput(commentSectionDiv, postJson.id);
+    
+    postDiv.appendChild(commentSectionDiv);
+};
+
+/** 
+* Appends a <p> tag wth 'text' content to the 'element'
+* of your choice
+*/
 function appendText(element, text, pClass){
 
   var p_text = document.createElement("p"); 
@@ -76,10 +202,27 @@ function appendText(element, text, pClass){
 
 };
 
-function appendCommentField(element, comment_array, post_id){
+/** 
+* Appends a comment textfield and comments to the 'element' 
+* (the comment section text div).
+*/
+function appendCommentText(element, comment_array){
+  for(var i in comment_array){
+    console.log()
+    var commentElement = document.createElement("div");
+    appendText(commentElement,comment_array[i].text,"comment_text");
+    appendText(commentElement,comment_array[i].dateTime,"comment_footer_text");
+    element.appendChild(commentElement);
+  }
+};
 
-  var commentSection = document.createElement("div");
-  commentSection.className = "comment-section";
+/** 
+* Appends a comment textfield to the 'element' (the comment section div).
+*/
+function createCommentInput(element, post_id){
+
+  var commentInputDiv = document.createElement("div");
+  //commentTextSection.className = "comment-text-section";
 
   var commentTextField = document.createElement("textarea");
   //these attributes can maybe be specified in css instead.
@@ -87,13 +230,10 @@ function appendCommentField(element, comment_array, post_id){
   commentTextField.setAttribute("placeholder","write a comment!");
   commentTextField.setAttribute("comment_id",post_id);
   commentTextField.className = "comment-textfield";
+  commentTextField.onkeydown = 
+    commentTextField.onkeyup = 
+    EventHandler.commentKeyEvent;
 
-  for(var i in comment_array){
-    console.log()
-    appendText(commentSection,comment_array[i].text,"comment_text");
-    appendText(commentSection,comment_array[i].dateTime,"comment_footer_text");
-  }
-  commentSection.appendChild(commentTextField);
-  element.appendChild(commentSection);
-
+  commentInputDiv.appendChild(commentTextField);
+  element.appendChild(commentInputDiv);
 };
