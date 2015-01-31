@@ -64,7 +64,7 @@ function updateNewPosts(topPostID){
 * When return_data is received, it calls functionToWrite 
 */
 function updateCommentSection(postElement){
-  var postID = postElement.parentNode.getAttribute("post-id");
+  var postID = postElement.parentNode.parentNode.getAttribute("post-id");
   console.log("postID = " + postID);
   if (postID===undefined)
     return;
@@ -125,9 +125,45 @@ function writeNewPostsHTML(postsArray){
 /** 
 * Clears comment section and rewrites all comment for a certain post.
 */
-function reWriteCommentsHTML(commentArray, postElement){
-  postElement.innerHTML = '';
-  appendCommentField(postElement, commentArray, postElement.parentNode.getAttribute("post-id"));
+
+/*
+  The structure of the wall:
+
+  <div Post>
+    
+    <div Post content>
+      Text
+      Date
+    </div>
+
+    <div Comment section>
+      <div Comment section text>
+        <div Comment>
+          Text
+          Date
+        </div>
+        .
+        .
+        .
+        <div Comment>
+          Text
+          Date
+        </div>
+      </div>
+      <div Comment section input>
+        input field here
+      </div>
+    </div>
+
+  </div>
+*/
+
+/*
+* element whould be comment section text div.
+*/
+function reWriteCommentsHTML(commentArray, element){
+  element.innerHTML = '';
+  appendCommentText(element, commentArray);
 };
 
 /** 
@@ -135,12 +171,20 @@ function reWriteCommentsHTML(commentArray, postElement){
 * and creates the post 
 */
 function createPost(postDiv,postJson){
-    
+    postDiv.innerHTML = '';
     postDiv.className="post";
     postDiv.setAttribute("post-id",postJson.id);
-    appendText(postDiv,postJson.text, "post-text");
-    appendText(postDiv,postJson.dateTime, "post-footer-text");
-    appendCommentField(postDiv, postJson.comment_array, postJson.id);
+    var postContentDiv = document.createElement("div"); 
+      appendText(postContentDiv,postJson.text, "post-text");
+      appendText(postContentDiv,postJson.dateTime, "post-footer-text");
+    postDiv.appendChild(postContentDiv);
+    var commentSectionDiv = document.createElement("div");
+      var commentTextSectionDiv = document.createElement("div");
+        appendCommentText(commentTextSectionDiv, postJson.comment_array);
+      commentSectionDiv.appendChild(commentTextSectionDiv);
+      createCommentInput(commentSectionDiv, postJson.id);
+    
+    postDiv.appendChild(commentSectionDiv);
 };
 
 /** 
@@ -161,13 +205,25 @@ function appendText(element, text, pClass){
 
 /** 
 * Appends a comment textfield and comments to the 'element' 
-* (the post div). could be made into two functions, one that
-* appends the textfield and one that appends the comments 
+* (the comment section text div).
 */
-function appendCommentField(element, comment_array, post_id){
+function appendCommentText(element, comment_array){
+  for(var i in comment_array){
+    console.log()
+    var commentElement = document.createElement("div");
+    appendText(commentElement,comment_array[i].text,"comment_text");
+    appendText(commentElement,comment_array[i].dateTime,"comment_footer_text");
+    element.appendChild(commentElement);
+  }
+};
 
-  var commentSection = document.createElement("div");
-  commentSection.className = "comment-section";
+/** 
+* Appends a comment textfield to the 'element' (the comment section div).
+*/
+function createCommentInput(element, post_id){
+
+  var commentInputDiv = document.createElement("div");
+  //commentTextSection.className = "comment-text-section";
 
   var commentTextField = document.createElement("textarea");
   //these attributes can maybe be specified in css instead.
@@ -179,12 +235,6 @@ function appendCommentField(element, comment_array, post_id){
     commentTextField.onkeyup = 
     EventHandler.commentKeyEvent;
 
-  for(var i in comment_array){
-    console.log()
-    appendText(commentSection,comment_array[i].text,"comment_text");
-    appendText(commentSection,comment_array[i].dateTime,"comment_footer_text");
-  }
-  commentSection.appendChild(commentTextField);
-  element.appendChild(commentSection);
-
+  commentInputDiv.appendChild(commentTextField);
+  element.appendChild(commentInputDiv);
 };

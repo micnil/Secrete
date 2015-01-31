@@ -135,7 +135,7 @@
 		$sql =
 				"SELECT comment_text, date, id FROM comments where
 				id = " . $postID . " 
-				ORDER BY date;";
+				ORDER BY id;";
 
 		$comments_response = $conn->query($sql);
 		if (!$comments_response) 
@@ -194,15 +194,12 @@
 
 		// Create connection
 		$conn = new mysqli($servername, $username, $password);
-
 		// Check connection
 		if ($conn->connect_error)
 		    die("Connection failed: " . $conn->connect_error . "<br/>");
-
 		// Use the database
 		if(!$conn->select_db("thewall"))
 			echo "Error using database: " . $conn->error . "<br/>";
-
 		// Insert comment into table
 		$sql = "INSERT INTO comments VALUE('" . $comment_text . "', NOW(), " . $id . ");";
 		if (!$conn->query($sql))

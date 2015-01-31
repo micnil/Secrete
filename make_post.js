@@ -36,12 +36,13 @@ function submitComment(comment_textfield)
   var comment_text = comment_textfield.value;
   //console.log(comment_text + "\n");
   xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
           //console.log(return_data);
-          //updatePosts();
           comment_textfield.value = "";
+          updateCommentSection(comment_textfield.parentNode.parentNode.childNodes.item(0));
       }
   }
   xhr.send("function=makeComment" + "&comment_text=" + comment_text + "&id=" + comment_textfield.getAttribute("comment_id"));
