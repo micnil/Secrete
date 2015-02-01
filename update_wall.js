@@ -37,6 +37,7 @@ function reWriteAllPosts() {
   var wallElement = document.getElementById('wall');
   wallElement.innerHTML = '';
   updateOldPosts();
+  console.log("Bajs");
 }
 
 /** 

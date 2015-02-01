@@ -6,26 +6,22 @@ var EventHandler = {
 	//this event calls uppdatePosts(arg), where arg
 	//is the bottom post id
 	scrollEvent: function (e) {
+		console.log("scroll");
 	    if (document.body.scrollHeight == 
 	        document.body.scrollTop +        
 	        window.innerHeight) {
 	        	var posts = document.getElementsByClassName("post");
-	  			//console.log(posts[posts.length-2].getAttribute("post-id"));
 	  			var post_id = posts[0] ? posts[posts.length-1].getAttribute("post-id") : 0;
 	  			post_id = post_id ? post_id : 0;
-	  			updateNewPosts(post_id);
-
 	  			updateOldPosts(post_id);
 	    }
-	    if (document.body.scrollTop == -1) {
-	    	// This code does not really work. Sometimes too many posts are loaded...
-	    	/*
+	    console.log(document.body.scrollTop);
+	    if (document.body.scrollTop == 0) {	    	
 	        	var posts = document.getElementsByClassName("post");
-	  			//console.log(posts[posts.length-2].getAttribute("post-id"));
 	  			var post_id = posts[0] ? posts[0].getAttribute("post-id") : 0;
 	  			post_id = post_id ? post_id : 0;
+	  			console.log("post_id = " + post_id);
 	  			updateNewPosts(post_id);
-	  		*/
 	    }
 	},
 
@@ -38,13 +34,19 @@ var EventHandler = {
 		if(EventHandler.key_map[16] && EventHandler.key_map[13]){ // SHIFT + ENTER
 			//do nothing, just regular enter
 		}else if(EventHandler.key_map[13]){ // ENTER
-			submitComment(e.target);
+			e.preventDefault();
+			//if string is not enpty or doesnt only contain white space
+			if(e.target.value.isEmpty()){
+				console.log("You can not post empty string");
+			}else{
+				submitComment(e.target);
+			}
 		}
     },
 
 
 };
 
-window.onscroll = EventHandler.scrollEvent;
+
 
 
