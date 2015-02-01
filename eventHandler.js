@@ -11,7 +11,21 @@ var EventHandler = {
 	        window.innerHeight) {
 	        	var posts = document.getElementsByClassName("post");
 	  			//console.log(posts[posts.length-2].getAttribute("post-id"));
-	  			updateOldPosts(posts[posts.length-1].getAttribute("post-id"));
+	  			var post_id = posts[0] ? posts[posts.length-1].getAttribute("post-id") : 0;
+	  			post_id = post_id ? post_id : 0;
+	  			updateNewPosts(post_id);
+
+	  			updateOldPosts(post_id);
+	    }
+	    if (document.body.scrollTop == -1) {
+	    	// This code does not really work. Sometimes too many posts are loaded...
+	    	/*
+	        	var posts = document.getElementsByClassName("post");
+	  			//console.log(posts[posts.length-2].getAttribute("post-id"));
+	  			var post_id = posts[0] ? posts[0].getAttribute("post-id") : 0;
+	  			post_id = post_id ? post_id : 0;
+	  			updateNewPosts(post_id);
+	  		*/
 	    }
 	},
 
