@@ -6,6 +6,7 @@ var EventHandler = {
 	//this event calls uppdatePosts(arg), where arg
 	//is the bottom post id
 	scrollEvent: function (e) {
+		console.log("scroll");
 	    if (document.body.scrollHeight == 
 	        document.body.scrollTop +        
 	        window.innerHeight) {
@@ -24,9 +25,9 @@ var EventHandler = {
 		if(EventHandler.key_map[16] && EventHandler.key_map[13]){ // SHIFT + ENTER
 			//do nothing, just regular enter
 		}else if(EventHandler.key_map[13]){ // ENTER
+			e.preventDefault();
 			//if string is not enpty or doesnt only contain white space
 			if(e.target.value.isEmpty()){
-				e.preventDefault();
 				console.log("You can not post empty string");
 			}else{
 				submitComment(e.target);
@@ -37,14 +38,6 @@ var EventHandler = {
 
 };
 
-/**
-* adding isEmpy() function to the String class.
-* checks whether a string is empty or contains only whitespace.
-*/
-String.prototype.isEmpty = function() {
-    return (this.length === 0 || !this.trim());
-};
 
-window.onscroll = EventHandler.scrollEvent;
 
 
