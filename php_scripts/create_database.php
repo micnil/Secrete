@@ -64,9 +64,11 @@ if ($conn->query($sql) === TRUE) {
 // Create table for comments
 $sql =
     "CREATE TABLE comments(
+    commentId MEDIUMINT NOT NULL AUTO_INCREMENT,
     comment_text VARCHAR(300) NOT NULL,
     date DATETIME NOT NULL,
-    id MEDIUMINT NOT NULL
+    postId MEDIUMINT NOT NULL,
+    PRIMARY KEY (commentId)
     );";
 if ($conn->query($sql) === TRUE) {
     echo "Created the table successfully" . "<br/>";

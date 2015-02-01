@@ -14,7 +14,7 @@ function updateOldPosts(bottomPostID){
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
-          //console.log(return_data);
+          console.log(return_data);
           var posts = JSON.parse(return_data);
           writeOldPostsHTML(posts);
       }
@@ -60,12 +60,20 @@ function updateNewPosts(topPostID){
 }
 
 /** 
-* Sends a request for all comments belonging to the postElement specified.
+* Sends a request for all comments belonging to the element specified.
+* element is comment section text
 * When return_data is received, it calls functionToWrite 
 */
-function updateCommentSection(postElement){
-  var postID = postElement.parentNode.parentNode.getAttribute("post-id");
-  console.log("postID = " + postID);
+function updateCommentSection(element){
+  var postID = element.parentNode.parentNode.getAttribute("post-id");
+  
+  var latestCommentID;
+  var latestCommentNode = element.childNodes.item(element.childNodes.length - 1); // The latest comment element is the last one in the list.
+  latestCommentID = latestCommentNode ? latestCommentNode.getAttribute("comment-id") : 0;
+
+  latestCommentID = latestCommentID === null ? 0 : latestCommentID;
+  console.log("latestCommentID = " + latestCommentID);
+  //console.log("postID = " + postID);
   if (postID===undefined)
     return;
 
@@ -79,13 +87,13 @@ function updateCommentSection(postElement){
           var return_data = xhr.responseText;
           //console.log(return_data);
           var comments = JSON.parse(return_data);
-          reWriteCommentsHTML(comments, postElement);
+          reWriteCommentsHTML(comments, element);
       }
   }
   //Geolocation.updatePosition(sendRequest);
   //function sendRequest(latitude,longitude) {
     //var radius = document.getElementById('radius_slider').value;  
-  xhr.send("function=getCommentData" + "&post_id=" + postID);
+  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + latestCommentID);
 }
 
 /** 
@@ -161,7 +169,7 @@ function writeNewPostsHTML(postsArray){
 * element whould be comment section text div.
 */
 function reWriteCommentsHTML(commentArray, element){
-  element.innerHTML = '';
+  //element.innerHTML = '';
   appendCommentText(element, commentArray);
 };
 
@@ -208,8 +216,8 @@ function appendText(element, text, pClass){
 */
 function appendCommentText(element, comment_array){
   for(var i in comment_array){
-    console.log()
     var commentElement = document.createElement("div");
+    commentElement.setAttribute("comment-id", comment_array[i].commentId);
     appendText(commentElement,comment_array[i].text,"comment_text");
     appendText(commentElement,comment_array[i].dateTime,"comment_footer_text");
     element.appendChild(commentElement);
@@ -228,7 +236,7 @@ function createCommentInput(element, post_id){
   //these attributes can maybe be specified in css instead.
   commentTextField.setAttribute("rows","1");
   commentTextField.setAttribute("placeholder","write a comment!");
-  commentTextField.setAttribute("comment_id",post_id);
+  //commentTextField.setAttribute("comment_id",post_id);
   commentTextField.className = "comment-textfield";
   commentTextField.onkeydown = 
     commentTextField.onkeyup = 

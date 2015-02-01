@@ -45,5 +45,5 @@ function submitComment(comment_textfield)
           updateCommentSection(comment_textfield.parentNode.parentNode.childNodes.item(0));
       }
   }
-  xhr.send("function=makeComment" + "&comment_text=" + comment_text + "&id=" + comment_textfield.getAttribute("comment_id"));
+  xhr.send("function=makeComment" + "&comment_text=" + comment_text + "&id=" + comment_textfield.parentNode.parentNode.parentNode.getAttribute("post-id"));
 }

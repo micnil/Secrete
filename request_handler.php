@@ -1,11 +1,13 @@
 <?php
 	class Comment{
-		public $id;
+		public $postId;
+		public $commentId;
 		public $text;
 		public $dateTime;
 
-		public function __construct($theId, $theDateTime, $theText ) {
-			$this->id = $theId;
+		public function __construct($thePostId, $theCommentId, $theDateTime, $theText ) {
+			$this->postId = $thePostId;
+			$this->commentId = $theCommentId;
 			$this->dateTime = $theDateTime;
 			$this->text = $theText;
 		}
@@ -87,9 +89,9 @@
 		$posts_array = array();
 		while ($row = mysqli_fetch_array($response)){
 				$sql =
-					"SELECT comment_text, date, id FROM comments where
-					id = " . $row['id'] . " 
-					ORDER BY date;";
+					"SELECT comment_text, date, postId, commentId FROM comments where
+					postId = " . $row['id'] . " 
+					ORDER BY commentId;";
 				$comments_response = $conn->query($sql);
 				if (!$comments_response) 
 				    echo "Error fetching data: " . $conn->error . "<br/>";
@@ -99,7 +101,8 @@
 					array_push(
 						$comment_array,
 						new Comment(
-							$comment_row['id'],
+							$comment_row['postId'],
+							$comment_row['commentId'],
 							$comment_row['date'],
 							$comment_row['comment_text']));
 				}
@@ -117,7 +120,7 @@
 		echo json_encode($posts_array);
 	}
 
-	function getCommentData($postID)
+	function getCommentData($postID, $latestCommentID)
 	{
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
@@ -133,9 +136,9 @@
 			echo "Error using database: " . $conn->error . "<br/>";
 
 		$sql =
-				"SELECT comment_text, date, id FROM comments where
-				id = " . $postID . " 
-				ORDER BY id;";
+				"SELECT comment_text, date, postId, commentId FROM comments where
+				postId = " . $postID . " AND commentId > $latestCommentID
+				ORDER BY commentId;";
 
 		$comments_response = $conn->query($sql);
 		if (!$comments_response) 
@@ -146,7 +149,8 @@
 			array_push(
 				$comment_array,
 				new Comment(
-					$comment_row['id'],
+					$comment_row['postId'],
+					$comment_row['commentId'],
 					$comment_row['date'],
 					$comment_row['comment_text']));
 		}
@@ -201,7 +205,7 @@
 		if(!$conn->select_db("thewall"))
 			echo "Error using database: " . $conn->error . "<br/>";
 		// Insert comment into table
-		$sql = "INSERT INTO comments VALUE('" . $comment_text . "', NOW(), " . $id . ");";
+		$sql = "INSERT INTO comments VALUE(0, '" . $comment_text . "', NOW(), " . $id . ");";
 		if (!$conn->query($sql))
 		    echo "Error inserting post: " . $conn->error . "<br/>";
 		$conn->close();
