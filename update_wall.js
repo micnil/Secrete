@@ -1,3 +1,44 @@
+
+/*
+  The structure of the wall:
+
+  <div Post>
+    
+    <div Post content>
+      Text
+      Date
+    </div>
+    
+    Load older comments button
+
+    <div Comment section>
+      <div Comment section text>
+        <div Comment>
+          Text
+          Date
+        </div>
+        .
+        .
+        .
+        <div Comment>
+          Text
+          Date
+        </div>
+      </div>
+      <div Comment section input>
+        input field here
+      </div>
+    </div>
+
+  </div>
+*/
+
+function reWriteAllPosts() {
+  var wallElement = document.getElementById('wall');
+  wallElement.innerHTML = '';
+  updateOldPosts();
+}
+
 /** 
 * Sends a request for new posts with a post-id smaller than 'bottomPostID', and 
 * radius smaller than specified.
@@ -64,7 +105,7 @@ function updateNewPosts(topPostID){
 * element is comment section text
 * When return_data is received, it calls functionToWrite 
 */
-function updateCommentSection(element){
+function updateNewComments(element){
   var postID = element.parentNode.parentNode.getAttribute("post-id");
   
   var latestCommentID;
@@ -85,15 +126,52 @@ function updateCommentSection(element){
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
-          //console.log(return_data);
+          console.log(return_data);
           var comments = JSON.parse(return_data);
-          reWriteCommentsHTML(comments, element);
+          writeNewCommentsHTML(comments, element);
       }
   }
   //Geolocation.updatePosition(sendRequest);
   //function sendRequest(latitude,longitude) {
     //var radius = document.getElementById('radius_slider').value;  
-  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + latestCommentID);
+  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + latestCommentID + "&numberOfComments=" + 10000000000000000000 + "&old_or_new=new");
+}
+
+/** 
+* Sends a request for all comments belonging to the element specified.
+* element is comment section text
+* When return_data is received, it calls functionToWrite 
+*/
+function updateOldComments(element){
+  var postID = element.parentNode.parentNode.getAttribute("post-id");
+  
+  var oldestCommentID;
+  var oldestCommentNode = element.childNodes.item(0); // The oldest comment element is the first one in the list.
+  oldestCommentID = oldestCommentNode ? oldestCommentNode.getAttribute("comment-id") : 100000000000000000000;
+  oldestCommentID = oldestCommentID === null ? 100000000000000000000 : oldestCommentID;
+
+  console.log("oldestCommentID = " + oldestCommentID);
+  //console.log("postID = " + postID);
+  if (postID===undefined)
+    return;
+
+  var xhr = new XMLHttpRequest();
+  var url = "request_handler.php";
+  xhr.open("POST", url, true);
+
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          //console.log(return_data);
+          var comments = JSON.parse(return_data);
+          writeOldCommentsHTML(comments, element);
+      }
+  }
+  //Geolocation.updatePosition(sendRequest);
+  //function sendRequest(latitude,longitude) {
+    //var radius = document.getElementById('radius_slider').value;  
+  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + oldestCommentID + "&numberOfComments=" + 5 + "&old_or_new=old");
 }
 
 /** 
@@ -129,48 +207,15 @@ function writeNewPostsHTML(postsArray){
   }
 };
 
-/** 
-* Clears comment section and rewrites all comment for a certain post.
-*/
-
-/*
-  The structure of the wall:
-
-  <div Post>
-    
-    <div Post content>
-      Text
-      Date
-    </div>
-
-    <div Comment section>
-      <div Comment section text>
-        <div Comment>
-          Text
-          Date
-        </div>
-        .
-        .
-        .
-        <div Comment>
-          Text
-          Date
-        </div>
-      </div>
-      <div Comment section input>
-        input field here
-      </div>
-    </div>
-
-  </div>
-*/
-
 /*
 * element whould be comment section text div.
 */
-function reWriteCommentsHTML(commentArray, element){
-  //element.innerHTML = '';
+function writeNewCommentsHTML(commentArray, element){
   appendCommentText(element, commentArray);
+};
+
+function writeOldCommentsHTML(commentArray, element){
+  insertCommentTextOnTop(element, commentArray);
 };
 
 /** 
@@ -185,12 +230,20 @@ function createPost(postDiv,postJson){
       appendText(postContentDiv,postJson.text, "post-text");
       appendText(postContentDiv,postJson.dateTime, "post-footer-text");
     postDiv.appendChild(postContentDiv);
+    var a = document.createElement('a');
+    var linkText = document.createTextNode("Load older comments");
     var commentSectionDiv = document.createElement("div");
       var commentTextSectionDiv = document.createElement("div");
         appendCommentText(commentTextSectionDiv, postJson.comment_array);
       commentSectionDiv.appendChild(commentTextSectionDiv);
       createCommentInput(commentSectionDiv, postJson.id);
     
+    a.appendChild(linkText);
+    a.title = "Load older comments";
+    a.href = "javascript:void(0);";
+    a.onclick = function() {updateOldComments(commentTextSectionDiv);};
+    postDiv.appendChild(a);
+
     postDiv.appendChild(commentSectionDiv);
 };
 
@@ -225,6 +278,21 @@ function appendCommentText(element, comment_array){
 };
 
 /** 
+* Appends a comment textfield and comments to the 'element' 
+* (the comment section text div).
+*/
+function insertCommentTextOnTop(element, comment_array){
+  //loop through backwards since we put the older comments on top.
+  for (var i = comment_array.length - 1; i >= 0; --i) {
+    var commentElement = document.createElement("div");
+    commentElement.setAttribute("comment-id", comment_array[i].commentId);
+    appendText(commentElement,comment_array[i].text,"comment_text");
+    appendText(commentElement,comment_array[i].dateTime,"comment_footer_text");
+    element.insertBefore(commentElement, element.firstChild);
+  }
+};
+
+/** 
 * Appends a comment textfield to the 'element' (the comment section div).
 */
 function createCommentInput(element, post_id){
@@ -236,7 +304,6 @@ function createCommentInput(element, post_id){
   //these attributes can maybe be specified in css instead.
   commentTextField.setAttribute("rows","1");
   commentTextField.setAttribute("placeholder","write a comment!");
-  //commentTextField.setAttribute("comment_id",post_id);
   commentTextField.className = "comment-textfield";
   commentTextField.onkeydown = 
     commentTextField.onkeyup = 

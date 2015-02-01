@@ -42,7 +42,7 @@ function submitComment(comment_textfield)
           var return_data = xhr.responseText;
           //console.log(return_data);
           comment_textfield.value = "";
-          updateCommentSection(comment_textfield.parentNode.parentNode.childNodes.item(0));
+          updateNewComments(comment_textfield.parentNode.parentNode.childNodes.item(0));
       }
   }
   xhr.send("function=makeComment" + "&comment_text=" + comment_text + "&id=" + comment_textfield.parentNode.parentNode.parentNode.getAttribute("post-id"));

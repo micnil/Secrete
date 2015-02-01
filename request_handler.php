@@ -68,33 +68,36 @@
 		$conn = new mysqli($servername, $username, $password);
 		// Check connection
 		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
+		    die("Connection failed: $conn->connect_error <br/>");
 		// Use the database
 		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
+			echo "Error using database: $conn->error <br/>";
 
 		$sign = $old_or_new == "old" ? "<" : ">";
 	    // This is some ugly shit. Better to save the x,y,z coordinates in the DB and compare those instead?
 		$sql =
 			"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
-			sqrt(pow(sqrt(pow(6378137*cos(" . $this_latitude . "*3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin(" . $this_latitude . "*3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos(" . $this_latitude . "*3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*(" . $this_longitude . "-pos_longitude),2))
-			< " . $radius . "
-			AND id " . $sign . $post_id . "
-			ORDER BY id DESC LIMIT " . $number_of_posts . ";";
+			sqrt(pow(sqrt(pow(6378137*cos( $this_latitude *3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin( $this_latitude *3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos( $this_latitude *3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*( $this_longitude -pos_longitude),2))
+			<  $radius AND id  $sign  $post_id 
+			ORDER BY id DESC LIMIT $number_of_posts;";
 
 		$response = $conn->query($sql);
 		if (!$response)
-		    echo "Error fetching data: " . $conn->error . "<br/>";
+		    echo "Error fetching data: $conn->error <br/>";
 		
 		$posts_array = array();
 		while ($row = mysqli_fetch_array($response)){
+				$sql = "SELECT COUNT(*) FROM comments where postId = " . $row['id'] . ";";
+				// The first comment in the list to be posted is the fifth counting from the newest comment
+				$firstCommentIndex = max(mysqli_fetch_array($conn->query($sql))['COUNT(*)'] - 5,0);
+
 				$sql =
 					"SELECT comment_text, date, postId, commentId FROM comments where
 					postId = " . $row['id'] . " 
-					ORDER BY commentId;";
+					ORDER BY commentId LIMIT $firstCommentIndex , 5;";
 				$comments_response = $conn->query($sql);
 				if (!$comments_response) 
-				    echo "Error fetching data: " . $conn->error . "<br/>";
+				    echo "Error fetching data: $conn->error <br/>";
 				
 				$comment_array = array();
 				while ($comment_row = mysqli_fetch_array($comments_response)){
@@ -120,7 +123,7 @@
 		echo json_encode($posts_array);
 	}
 
-	function getCommentData($postID, $latestCommentID)
+	function getCommentData($postID, $commentID, $numberOfComments, $old_or_new)
 	{
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
@@ -130,19 +133,25 @@
 		$conn = new mysqli($servername, $username, $password);
 		// Check connection
 		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
+		    die("Connection failed: $conn->connect_error <br/>");
 		// Use the database
 		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
+			echo "Error using database: $conn->error <br/>";
 
+		$sql = "SELECT COUNT(*) FROM comments where postId = $postID;";
+		// The first comment in the list to be posted is the fifth counting from the newest comment
+		$firstCommentIndex = max(mysqli_fetch_array($conn->query($sql))['COUNT(*)'] - 5,0);
+
+
+		$sign = $old_or_new == "old" ? "<" : ">";
 		$sql =
 				"SELECT comment_text, date, postId, commentId FROM comments where
-				postId = " . $postID . " AND commentId > $latestCommentID
-				ORDER BY commentId;";
+				postId = $postID  AND commentId $sign $commentID
+				ORDER BY commentId DESC LIMIT $numberOfComments;";
 
 		$comments_response = $conn->query($sql);
 		if (!$comments_response) 
-		    echo "Error fetching data: " . $conn->error . "<br/>";
+		    echo "Error fetching data: $conn->error <br/>";
 		
 		$comment_array = array();
 		while ($comment_row = mysqli_fetch_array($comments_response)){
@@ -154,8 +163,9 @@
 					$comment_row['date'],
 					$comment_row['comment_text']));
 		}
+
 		$conn->close();
-		echo json_encode($comment_array);
+		echo json_encode(array_reverse($comment_array));
 	}
 
 	/** 
@@ -173,14 +183,14 @@
 		$conn = new mysqli($servername, $username, $password);
 		// Check connection
 		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
+		    die("Connection failed: $conn->connect_error <br/>");
 		// Use the database
 		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
+			echo "Error using database: $conn->error <br/>";
 		// Insert post into table
-		$sql = "INSERT INTO posts VALUE(0,'" . $post_text . "', " . $latitude . ", " . $longitude . ", NOW());";
+		$sql = "INSERT INTO posts VALUE(0,'$post_text', $latitude, $longitude, NOW());";
 		if (!$conn->query($sql))
-		    echo "Error inserting post: " . $conn->error . "<br/>";
+		    echo "Error inserting post: $conn->error <br/>";
 
 		$conn->close();
 	}
@@ -200,14 +210,14 @@
 		$conn = new mysqli($servername, $username, $password);
 		// Check connection
 		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
+		    die("Connection failed: $conn->connect_error <br/>");
 		// Use the database
 		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
+			echo "Error using database: $conn->error <br/>";
 		// Insert comment into table
-		$sql = "INSERT INTO comments VALUE(0, '" . $comment_text . "', NOW(), " . $id . ");";
+		$sql = "INSERT INTO comments VALUE( $id, 0, '$comment_text', NOW());";
 		if (!$conn->query($sql))
-		    echo "Error inserting post: " . $conn->error . "<br/>";
+		    echo "Error inserting post: $conn->error <br/>";
 		$conn->close();
 	}
 ?>
