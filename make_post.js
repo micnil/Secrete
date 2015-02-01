@@ -5,6 +5,13 @@ function submitPost()
   xhr.open("POST", url, true);
 
   var post_text = document.getElementById('post_text').value;
+
+  //if string is not enpty or doesnt only contain white space
+  if(post_text.isEmpty()){;
+      alert("you are trying to post an empty post. This is not allowed");
+      return;
+  }
+
   xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {

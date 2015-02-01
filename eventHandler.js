@@ -24,11 +24,25 @@ var EventHandler = {
 		if(EventHandler.key_map[16] && EventHandler.key_map[13]){ // SHIFT + ENTER
 			//do nothing, just regular enter
 		}else if(EventHandler.key_map[13]){ // ENTER
-			submitComment(e.target);
+			//if string is not enpty or doesnt only contain white space
+			if(e.target.value.isEmpty()){
+				e.preventDefault();
+				console.log("You can not post empty string");
+			}else{
+				submitComment(e.target);
+			}
 		}
     },
 
 
+};
+
+/**
+* adding isEmpy() function to the String class.
+* checks whether a string is empty or contains only whitespace.
+*/
+String.prototype.isEmpty = function() {
+    return (this.length === 0 || !this.trim());
 };
 
 window.onscroll = EventHandler.scrollEvent;
