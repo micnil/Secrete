@@ -14,17 +14,18 @@ function updateOldPosts(bottomPostID){
   xhr.onreadystatechange = function() {
       if(xhr.readyState == 4 && xhr.status == 200) {
           var return_data = xhr.responseText;
-          //console.log(return_data);
+          console.log(return_data);
           var posts = JSON.parse(return_data);
           writeOldPostsHTML(posts);
       }
   }
   Geolocation.updatePosition(sendRequest);
   function sendRequest(latitude,longitude) {
-  	var radius = document.getElementById('radius_slider').value;
-  	if (latitude && longitude) {
-  	  	xhr.send("function=getPostsData" + "&latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&post_id=" + bottomPostID + "&numberOfPosts=" + 5 + "&old_or_new=old");
-  	}
+    var radius = document.getElementById('radius_slider').value;
+
+    if (latitude && longitude) {
+        xhr.send("function=getPostsData" + "&latitude=" + latitude + "&longitude=" + longitude + "&radius=" + radius + "&post_id=" + bottomPostID + "&numberOfPosts=" + 5 + "&old_or_new=old");
+    }
   }
 }
 
@@ -63,7 +64,7 @@ function updateNewPosts(topPostID){
 * element is comment section text
 * When return_data is received, it calls functionToWrite 
 */
-function updateCommentSection(element){
+function updateNewComments(element){
   var postID = element.parentNode.parentNode.getAttribute("post-id");
   
   var latestCommentID;
@@ -71,7 +72,44 @@ function updateCommentSection(element){
   latestCommentID = latestCommentNode ? latestCommentNode.getAttribute("comment-id") : 0;
 
   latestCommentID = latestCommentID === null ? 0 : latestCommentID;
-  //console.log("latestCommentID = " + latestCommentID);
+  console.log("latestCommentID = " + latestCommentID);
+  //console.log("postID = " + postID);
+  if (postID===undefined)
+    return;
+
+  var xhr = new XMLHttpRequest();
+  var url = "request_handler.php";
+  xhr.open("POST", url, true);
+
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == 4 && xhr.status == 200) {
+          var return_data = xhr.responseText;
+          console.log(return_data);
+          var comments = JSON.parse(return_data);
+          writeNewCommentsHTML(comments, element);
+      }
+  }
+  //Geolocation.updatePosition(sendRequest);
+  //function sendRequest(latitude,longitude) {
+    //var radius = document.getElementById('radius_slider').value;  
+  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + latestCommentID + "&numberOfComments=" + 10000000000000000000 + "&old_or_new=new");
+}
+
+/** 
+* Sends a request for all comments belonging to the element specified.
+* element is comment section text
+* When return_data is received, it calls functionToWrite 
+*/
+function updateOldComments(element){
+  var postID = element.parentNode.parentNode.getAttribute("post-id");
+  
+  var oldestCommentID;
+  var oldestCommentNode = element.childNodes.item(0); // The oldest comment element is the first one in the list.
+  oldestCommentID = oldestCommentNode ? oldestCommentNode.getAttribute("comment-id") : 100000000000000000000;
+  oldestCommentID = oldestCommentID === null ? 100000000000000000000 : oldestCommentID;
+
+  console.log("oldestCommentID = " + oldestCommentID);
   //console.log("postID = " + postID);
   if (postID===undefined)
     return;
@@ -86,11 +124,11 @@ function updateCommentSection(element){
           var return_data = xhr.responseText;
           //console.log(return_data);
           var comments = JSON.parse(return_data);
-          reWriteCommentsHTML(comments, element);
+          writeOldCommentsHTML(comments, element);
       }
   }
   //Geolocation.updatePosition(sendRequest);
   //function sendRequest(latitude,longitude) {
     //var radius = document.getElementById('radius_slider').value;  
-  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + latestCommentID);
+  xhr.send("function=getCommentData" + "&post_id=" + postID + "&latest_comment_id=" + oldestCommentID + "&numberOfComments=" + 5 + "&old_or_new=old");
 }

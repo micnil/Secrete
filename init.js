@@ -1,6 +1,6 @@
 function init(){
 
-	document.getElementById("radius_slider").onchange = debounce(updateOldPosts,1000);
+	document.getElementById("radius_slider").onchange = debounce(reWriteAllPosts);
 
 	document.getElementById("post_submit_btn").onclick = submitPost;
 

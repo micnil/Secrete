@@ -2,9 +2,16 @@
 /*
 Before running this script, create an admin user:
 
+The wall_admin is appearently used for the trigger aswell which makes it need
+the privileges TRIGGER, SELECT, UPDATE when inserting a comment.
+
 CREATE USER 'wall_admin'@'localhost' IDENTIFIED BY 'w1h2k4l8';
 GRANT CREATE ON thewall.* TO 'wall_admin'@'localhost';
 GRANT DROP ON thewall.* TO 'wall_admin'@'localhost';
+GRANT REFERENCES ON thewall.* TO 'wall_admin'@'localhost';
+GRANT TRIGGER ON thewall.* TO 'wall_admin'@'localhost';
+GRANT SELECT ON thewall.* TO 'wall_admin'@'localhost';
+GRANT UPDATE ON thewall.* TO 'wall_admin'@'localhost';
 FLUSH PRIVILEGES;
 
 The wall_poster user:
@@ -54,27 +61,49 @@ $sql =
 	pos_latitude DOUBLE NOT NULL,
     pos_longitude DOUBLE NOT NULL,
 	date DATETIME NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE KEY postIdUnique (id)
 	);";
 if ($conn->query($sql) === TRUE) {
-    echo "Created the table successfully" . "<br/>";
+    echo "Created the table successfully <br/>";
 } else {
-    echo "Error creating table: " . $conn->error . "<br/>";
+    echo "Error creating table: $conn->error <br/>";
 }
 
 // Create table for comments
 $sql =
     "CREATE TABLE comments(
+    postId MEDIUMINT NOT NULL,
     commentId MEDIUMINT NOT NULL AUTO_INCREMENT,
     comment_text VARCHAR(300) NOT NULL,
     date DATETIME NOT NULL,
-    postId MEDIUMINT NOT NULL,
-    PRIMARY KEY (commentId)
+    PRIMARY KEY (commentId, postId),
+    KEY fk_comments_post_id_idx (postId),
+    CONSTRAINT fk_comments_post_id FOREIGN KEY (postId) REFERENCES posts (id) ON DELETE CASCADE ON UPDATE CASCADE
     );";
+
 if ($conn->query($sql) === TRUE) {
-    echo "Created the table successfully" . "<br/>";
+    echo "Created the table successfully <br/>";
 } else {
-    echo "Error creating table: " . $conn->error . "<br/>";
+    echo "Error creating table: $conn->error <br/>";
+}
+
+// Create trigger for comments
+$sql =
+    "CREATE
+    TRIGGER thewall.insert_comment_auto_inc
+    BEFORE INSERT ON thewall.comments
+    FOR EACH ROW
+    -- Edit trigger body code below this line. Do not edit lines above this one
+    BEGIN
+      SELECT COALESCE(MAX(commentId) + 1, 1) INTO @commentId FROM comments WHERE postId = NEW.postId;
+      SET NEW.commentId = @commentId;
+    END";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Created the trigger successfully <br/>";
+} else {
+    echo "Error creating trigger: $conn->error <br/>";
 }
 
 $conn->close();

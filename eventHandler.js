@@ -11,8 +11,17 @@ var EventHandler = {
 	        document.body.scrollTop +        
 	        window.innerHeight) {
 	        	var posts = document.getElementsByClassName("post");
-	  			//console.log(posts[posts.length-2].getAttribute("post-id"));
-	  			updateOldPosts(posts[posts.length-1].getAttribute("post-id"));
+	  			var post_id = posts[0] ? posts[posts.length-1].getAttribute("post-id") : 0;
+	  			post_id = post_id ? post_id : 0;
+	  			updateOldPosts(post_id);
+	    }
+	    console.log(document.body.scrollTop);
+	    if (document.body.scrollTop == 0) {	    	
+	        	var posts = document.getElementsByClassName("post");
+	  			var post_id = posts[0] ? posts[0].getAttribute("post-id") : 0;
+	  			post_id = post_id ? post_id : 0;
+	  			console.log("post_id = " + post_id);
+	  			updateNewPosts(post_id);
 	    }
 	},
 

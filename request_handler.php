@@ -65,6 +65,7 @@
 		$db = "theWall";
 
 		// Create connection
+
 		$conn = new mysqli($servername, $username, $password,$db);
 
 		if (mysqli_connect_errno()) {
@@ -74,15 +75,16 @@
 
 		//is this dangerous?
 		$sign = $old_or_new == "old" ? "<" : ">";
+
 	    // Prepare a statement to get either new or old post
 		if (!($post_stmt = $conn->prepare("SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
 			sqrt(pow(sqrt(pow(6378137*cos(?*3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin(?*3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos(?*3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*(?-pos_longitude),2))
-			< ? AND id " . $sign . " ?
+			< ? AND id $sign ?
 			ORDER BY id DESC LIMIT ?"))) 
 		{
 			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
 		}
-		
+	
 		// binding the parameters that the client sent to the server. 
 		// d=double
 		// i=integer
@@ -108,16 +110,21 @@
 		// Preparing second statement, for the comments
 		if (!($comment_stmt = $conn->prepare("SELECT comment_text, date, postId, commentId FROM comments where
 					postId = ? 
-					ORDER BY commentId"))) 
+					ORDER BY commentId LIMIT ? , 5"))) 
 		{
 			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
 		}
 
 		$posts_array = array();
+
 		while ($post_stmt->fetch()){
-				
+
+			$sql = "SELECT COUNT(*) FROM comments where postId = " . $id . ";";
+			// The first comment in the list to be posted is the fifth counting from the newest comment
+			$firstCommentIndex = max(mysqli_fetch_array($conn->query($sql))['COUNT(*)'] - 5,0);	
+
 			// binding the post id to the comment_stmt
-			if (!$comment_stmt->bind_param("i", $id)) {
+			if (!$comment_stmt->bind_param("ii", $id, $firstCommentIndex)) {
 				echo "Binding parameters failed: (" . $comment_stmt->errno . ") " . $comment_stmt->error;
 			}
 
@@ -159,7 +166,7 @@
 			echo json_encode($posts_array);
 	}
 
-	function getCommentData($postID, $latestCommentID)
+	function getCommentData($postID, $commentID, $numberOfComments, $old_or_new)
 	{
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
@@ -174,14 +181,20 @@
 			exit();
 		}
 
+		$sql = "SELECT COUNT(*) FROM comments where postId = $postID;";
+		// The first comment in the list to be posted is the fifth counting from the newest comment
+		$firstCommentIndex = max(mysqli_fetch_array($conn->query($sql))['COUNT(*)'] - 5,0);
+
+		$sign = $old_or_new == "old" ? "<" : ">";
+
 		if (!($stmt = $conn->prepare("SELECT comment_text, date, postId, commentId FROM comments where
-				postId = ? AND commentId > ?
-				ORDER BY commentId"))) 
+				postId = ? AND commentId $sign ?
+				ORDER BY commentId DESC LIMIT ?"))) 
 		{
 			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
 		}
 
-		if (!$stmt->bind_param("ii", $postID, $latestCommentID)) {
+		if (!$stmt->bind_param("iii", $postID, $commentID, $numberOfComments)) {
 			echo "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 		}
 
@@ -206,10 +219,11 @@
 					$date,
 					$comment_text));
 		}
+
 		$stmt->free_result();
 		$stmt -> close();
 		$conn->close();
-		echo json_encode($comment_array);
+		echo json_encode(array_reverse($comment_array));
 	}
 
 	/** 
@@ -241,6 +255,7 @@
 			echo "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 		}
 
+
 		// Executes the statement (sends the query)
 		if (!$stmt->execute()) {
 		    echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
@@ -271,12 +286,12 @@
 			exit();
 		}
 
-		if (!($stmt = $conn->prepare("INSERT INTO comments VALUE(0, ?, NOW(), ?)"))) 
+		if (!($stmt = $conn->prepare("INSERT INTO comments VALUE( ?, 0, ?, NOW())"))) 
 		{
 			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
 		}
 
-		if (!$stmt->bind_param("si", $comment_text, $id)) {
+		if (!$stmt->bind_param("is", $id, $comment_text)) {
 			echo "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 		}
 
