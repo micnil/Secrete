@@ -12,6 +12,7 @@ The wall_poster user:
 CREATE USER 'wall_poster'@'localhost' IDENTIFIED BY 'v4l5g6s9';
 GRANT INSERT ON thewall.* TO 'wall_poster'@'localhost';
 GRANT SELECT ON thewall.* TO 'wall_poster'@'localhost';
+GRANT EXECUTE ON thewall.* TO 'wall_poster'@'localhost';
 FLUSH PRIVILEGES;
 
 Maybe have another user that does the select later so that the post user can

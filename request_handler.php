@@ -51,7 +51,6 @@
 	* loaded. Otherwise posts with higher id will be loaded. number_of_posts
 	* specifies how many post should be loaded at maximum.
 	*/
-
 	function getPostsData(
 		$this_latitude,
 		$this_longitude,
@@ -63,61 +62,101 @@
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
 		$password = "v4l5g6s9";
+		$db = "theWall";
 
 		// Create connection
-		$conn = new mysqli($servername, $username, $password);
-		// Check connection
-		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
-		// Use the database
-		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
+		$conn = new mysqli($servername, $username, $password,$db);
 
-		$sign = $old_or_new == "old" ? "<" : ">";
-	    // This is some ugly shit. Better to save the x,y,z coordinates in the DB and compare those instead?
-		$sql =
-			"SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
-			sqrt(pow(sqrt(pow(6378137*cos(" . $this_latitude . "*3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin(" . $this_latitude . "*3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos(" . $this_latitude . "*3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*(" . $this_longitude . "-pos_longitude),2))
-			< " . $radius . "
-			AND id " . $sign . $post_id . "
-			ORDER BY id DESC LIMIT " . $number_of_posts . ";";
-
-		$response = $conn->query($sql);
-		if (!$response)
-		    echo "Error fetching data: " . $conn->error . "<br/>";
-		
-		$posts_array = array();
-		while ($row = mysqli_fetch_array($response)){
-				$sql =
-					"SELECT comment_text, date, postId, commentId FROM comments where
-					postId = " . $row['id'] . " 
-					ORDER BY commentId;";
-				$comments_response = $conn->query($sql);
-				if (!$comments_response) 
-				    echo "Error fetching data: " . $conn->error . "<br/>";
-				
-				$comment_array = array();
-				while ($comment_row = mysqli_fetch_array($comments_response)){
-					array_push(
-						$comment_array,
-						new Comment(
-							$comment_row['postId'],
-							$comment_row['commentId'],
-							$comment_row['date'],
-							$comment_row['comment_text']));
-				}
-				array_push(
-					$posts_array,
-					new Post(
-						$row['id'],
-						$row['pos_latitude'],
-						$row['pos_longitude'],
-						$row['date'],
-						$row['post'],
-						$comment_array));
+		if (mysqli_connect_errno()) {
+			printf("Connect failed: %s\n", mysqli_connect_error());
+			exit();
 		}
-		$conn->close();
-		echo json_encode($posts_array);
+
+		//is this dangerous?
+		$sign = $old_or_new == "old" ? "<" : ">";
+	    // Prepare a statement to get either new or old post
+		if (!($post_stmt = $conn->prepare("SELECT id, post, pos_longitude, pos_latitude, date FROM posts where
+			sqrt(pow(sqrt(pow(6378137*cos(?*3.14159265359/180)-6378137*cos(pos_latitude*3.14159265359/180),2)+pow(6378137*sin(?*3.14159265359/180)-6378137*sin(pos_latitude*3.14159265359/180),2)),2) + pow(2*3.14159265359*((((6378137*cos(?*3.14159265359/180)+6378137*cos(pos_latitude*3.14159265359/180))/2))/360)*(?-pos_longitude),2))
+			< ? AND id " . $sign . " ?
+			ORDER BY id DESC LIMIT ?"))) 
+		{
+			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
+		}
+		
+		// binding the parameters that the client sent to the server. 
+		// d=double
+		// i=integer
+	    if (!$post_stmt->bind_param("dddddii", $this_latitude, 
+			$this_latitude, $this_latitude, $this_longitude, 
+			$radius, $post_id, $number_of_posts)) {
+			echo "Binding parameters failed: (" . $post_stmt->errno . ") " . $post_stmt->error;
+		}
+
+		// Executes the statement (sends the query)
+		if (!$post_stmt->execute()) {
+		    echo "Execute failed: (" . $post_stmt->errno . ") " . $post_stmt->error;
+		}
+
+		// this has to be here if we want to be able to prepare another statement simultaneously
+		$post_stmt->store_result();
+
+		//binding the result to these variables. They will be updated when post_stmt->fetch() is called
+		if (!$post_stmt->bind_result($id, $post, $pos_longitude, $pos_latitude, $post_date)) {
+			echo "Binding output parameters failed: (" . $post_stmt->errno . ") " . $post_stmt->error;
+		}
+
+		// Preparing second statement, for the comments
+		if (!($comment_stmt = $conn->prepare("SELECT comment_text, date, postId, commentId FROM comments where
+					postId = ? 
+					ORDER BY commentId"))) 
+		{
+			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
+		}
+
+		$posts_array = array();
+		while ($post_stmt->fetch()){
+				
+			// binding the post id to the comment_stmt
+			if (!$comment_stmt->bind_param("i", $id)) {
+				echo "Binding parameters failed: (" . $comment_stmt->errno . ") " . $comment_stmt->error;
+			}
+
+			// executes comment_stmt
+			if (!$comment_stmt->execute()) {
+		    	echo "Execute failed: (" . $comment_stmt->errno . ") " . $comment_stmt->error;
+			}
+
+			// binding the result variables. updated on fetch().
+			if (!$comment_stmt->bind_result($comment_text, $comment_date, $postId, $commentId)) {
+				echo "Binding output parameters failed: (" . $comment_stmt->errno . ") " . $comment_stmt->error;
+			}
+			$comment_array = array();
+			while ($comment_stmt->fetch()){
+				array_push(
+					$comment_array,
+					new Comment(
+						$postId,
+						$commentId,
+						$comment_date,
+						$comment_text));
+			}
+			array_push(
+				$posts_array,
+				new Post(
+					$id,
+					$pos_latitude,
+					$pos_longitude,
+					$post_date,
+					$post,
+					$comment_array));
+		}
+			//stmt:s need to be closed.
+			$comment_stmt->free_result();
+			$post_stmt->free_result();
+			$comment_stmt ->close();
+			$post_stmt -> close();
+			$conn->close();
+			echo json_encode($posts_array);
 	}
 
 	function getCommentData($postID, $latestCommentID)
@@ -125,35 +164,50 @@
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
 		$password = "v4l5g6s9";
+		$db = "theWall";
 
 		// Create connection
-		$conn = new mysqli($servername, $username, $password);
-		// Check connection
-		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
-		// Use the database
-		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
+		$conn = new mysqli($servername, $username, $password, $db);
 
-		$sql =
-				"SELECT comment_text, date, postId, commentId FROM comments where
-				postId = " . $postID . " AND commentId > $latestCommentID
-				ORDER BY commentId;";
+		if (mysqli_connect_errno()) {
+			printf("Connect failed: %s\n", mysqli_connect_error());
+			exit();
+		}
 
-		$comments_response = $conn->query($sql);
-		if (!$comments_response) 
-		    echo "Error fetching data: " . $conn->error . "<br/>";
+		if (!($stmt = $conn->prepare("SELECT comment_text, date, postId, commentId FROM comments where
+				postId = ? AND commentId > ?
+				ORDER BY commentId"))) 
+		{
+			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
+		}
+
+		if (!$stmt->bind_param("ii", $postID, $latestCommentID)) {
+			echo "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		}
+
+		// Executes the statement (sends the query)
+		if (!$stmt->execute()) {
+		    echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		}
 		
+		//binding the result to these variables. They will be updated when post_stmt->fetch() is called
+		if (!$stmt->bind_result($comment_text, $date, $postId, $commentId)) {
+			echo "Binding output parameters failed: (" . $post_stmt->errno . ") " . $post_stmt->error;
+		}
+
+
 		$comment_array = array();
-		while ($comment_row = mysqli_fetch_array($comments_response)){
+		while ($stmt->fetch()){
 			array_push(
 				$comment_array,
 				new Comment(
-					$comment_row['postId'],
-					$comment_row['commentId'],
-					$comment_row['date'],
-					$comment_row['comment_text']));
+					$postId,
+					$commentId,
+					$date,
+					$comment_text));
 		}
+		$stmt->free_result();
+		$stmt -> close();
 		$conn->close();
 		echo json_encode($comment_array);
 	}
@@ -168,20 +222,32 @@
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
 		$password = "v4l5g6s9";
+		$db = "theWall";
 
 		// Create connection
-		$conn = new mysqli($servername, $username, $password);
-		// Check connection
-		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
-		// Use the database
-		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
-		// Insert post into table
-		$sql = "INSERT INTO posts VALUE(0,'" . $post_text . "', " . $latitude . ", " . $longitude . ", NOW());";
-		if (!$conn->query($sql))
-		    echo "Error inserting post: " . $conn->error . "<br/>";
+		$conn = new mysqli($servername, $username, $password, $db);
 
+		if (mysqli_connect_errno()) {
+			printf("Connect failed: %s\n", mysqli_connect_error());
+			exit();
+		}
+
+		if (!($stmt = $conn->prepare("INSERT INTO posts VALUE(0, ?, ?, ?, NOW())"))) 
+		{
+			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
+		}
+
+		if (!$stmt->bind_param("sdd", $post_text, $latitude, $longitude)) {
+			echo "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		}
+
+		// Executes the statement (sends the query)
+		if (!$stmt->execute()) {
+		    echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		}
+
+		//$stmt->free_result();
+		$stmt -> close();
 		$conn->close();
 	}
 
@@ -195,19 +261,32 @@
 		$servername = "127.0.0.1"; // localhost
 		$username = "wall_poster";
 		$password = "v4l5g6s9";
+		$db = "theWall";
 
 		// Create connection
-		$conn = new mysqli($servername, $username, $password);
-		// Check connection
-		if ($conn->connect_error)
-		    die("Connection failed: " . $conn->connect_error . "<br/>");
-		// Use the database
-		if(!$conn->select_db("thewall"))
-			echo "Error using database: " . $conn->error . "<br/>";
-		// Insert comment into table
-		$sql = "INSERT INTO comments VALUE(0, '" . $comment_text . "', NOW(), " . $id . ");";
-		if (!$conn->query($sql))
-		    echo "Error inserting post: " . $conn->error . "<br/>";
+		$conn = new mysqli($servername, $username, $password, $db);
+
+		if (mysqli_connect_errno()) {
+			printf("Connect failed: %s\n", mysqli_connect_error());
+			exit();
+		}
+
+		if (!($stmt = $conn->prepare("INSERT INTO comments VALUE(0, ?, NOW(), ?)"))) 
+		{
+			echo "Prepare failed: (" . $conn->errno . ") " . htmlspecialchars($conn->error);
+		}
+
+		if (!$stmt->bind_param("si", $comment_text, $id)) {
+			echo "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		}
+
+		// Executes the statement (sends the query)
+		if (!$stmt->execute()) {
+		    echo "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		}
+
+		//$stmt->free_result();
+		$stmt -> close();
 		$conn->close();
 	}
 ?>

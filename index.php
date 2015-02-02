@@ -10,6 +10,7 @@
 		<script type="text/javascript" src="eventHandler.js"></script>
 		<script type="text/javascript" src="geolocation.js"></script>
 		<script type="text/javascript" src="make_post.js"></script>
+		<script type="text/javascript" src="get_post.js"></script>
 		<script type="text/javascript" src="update_wall.js"></script>
 		<script type="text/javascript" src="init.js"></script>
 	</head>
